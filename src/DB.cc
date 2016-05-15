@@ -8,7 +8,7 @@
 #include <fcntl.h>
 
 #define BUF_SIZE   536870912
-#define ENTRY_SIZE (1 + VAL_LEN)
+#define ENTRY_SIZE ((uint64_t) 1 + VAL_LEN)
 
 using std::ifstream;
 using std::ofstream;
@@ -38,7 +38,7 @@ bool DB::get(uint32_t key, string &val) {
         read(db_file, buffer, ENTRY_SIZE);
         read_lock.unlock();
         if (buffer[0] == 1) {
-            val = string(buffer + 1 + KEY_LEN, VAL_LEN);
+            val = string(buffer + 1, VAL_LEN);
             cache.put(key, val);
             return true;
         }

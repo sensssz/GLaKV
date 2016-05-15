@@ -132,19 +132,17 @@ void send_quit(int sockfd) {
 void load_data(uint32_t db_size) {
     int sockfd = connect();
     cout << "Loading " << db_size << " kv pairs into the database..." << endl;
-    uint32_t key = 0;
 
     // Load data into the database, one batch at a time
     const uint32_t batch_size = db_size / 5;
-    uint32_t count = 0;
-    while (count < db_size) {
-        uint32_t num_writes = min(batch_size, db_size - count);
-        for (uint32_t i = 0; i < num_writes; ++i, ++count) {
+    uint32_t key = 0;
+    while (key < db_size) {
+        uint32_t num_writes = min(batch_size, db_size - key);
+        for (uint32_t i = 0; i < num_writes; ++i, ++key) {
             char val_buf[VAL_LEN];
-            key = i;
             send_put(sockfd, key, val_buf, VAL_LEN);
         }
-        uint32_t percentage_done = (count * 100) / db_size;
+        uint32_t percentage_done = (key * 100) / db_size;
         string progress_bar(percentage_done, '.');
         cout << "Loading" << progress_bar << percentage_done << '%' << endl;
     }
