@@ -28,7 +28,7 @@ exp_dist_test.o: exp_dist_test.cc
 exponential_distribution.o: exponential_distribution.cc exponential_distribution.h
 	$(CC) $(CXXFLAGS) exponential_distribution.cc -o exponential_distribution.o
 
-DB.o: db.cc DB.h config.h
+DB.o: DB.cc DB.h config.h
 	$(CC) $(CXXFLAGS) DB.cc -o DB.o
 
 clean:
