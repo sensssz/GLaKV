@@ -1,4 +1,8 @@
-CXXFLAGS = -std=c++11 -c -O3 -g
+CUSTOM_USR = /home/jiamin/usr
+INCLUDE = -I$(CUSTOM_USR)/include
+LIBS = -lboost
+LDFLAGS = -L$(CUSTOM_USR)/lib $(LIBS)
+CXXFLAGS = -std=c++11 -c -O3 -g $(INCLUDE)
 OBJS = DB.o glakv_client.o glakv_server.o exponential_distribution.o
 
 all: exec
@@ -6,8 +10,8 @@ all: exec
 test: exp_dist_test
 
 exec: $(OBJS)
-	$(CC) DB.o glakv_server.o -o glakv_server
-	$(CC) DB.o glakv_client.o exponential_distribution.o -o glakv_client
+	$(CC) $(LDFLAGS) DB.o glakv_server.o -o glakv_server
+	$(CC) $(LDFLAGS) DB.o glakv_client.o exponential_distribution.o -o glakv_client
 
 glakv_client.o: glakv_client.cc config.h
 	$(CC) $(CXXFLAGS) glakv_client.cc -o glakv_client.o
