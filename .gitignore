@@ -4,5 +4,5 @@
 CMakeLists.txt
 src/glakv
 src/glakv_home
-src/glakv_src
+src/glakv_client
 src/glakv_server
