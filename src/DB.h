@@ -36,6 +36,7 @@ private:
     list<uint32_t> lru_keys;
     shared_mutex mutex;
     uint64_t capacity;
+    LRUCache(const LRUCache &) = delete;
 public:
     LRUCache(uint64_t capacity_in) : capacity(capacity_in) {}
 
@@ -90,6 +91,7 @@ private:
     LRUCache     cache;
     uint32_t     db_size;
 
+    DB(const DB&) = delete;
     void create_if_not_exists(string &dir);
 public:
     DB(string &dir);
