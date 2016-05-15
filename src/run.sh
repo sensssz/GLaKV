@@ -3,7 +3,7 @@
 export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/tmux/lib:/home/jiamin/usr/lib:/home/jiamin/mysql/lib:$LD_LIBRARY_PATH
 
 salat3=salat3.eecs.umich.edu
-db_path=/home/jiamin/speculative/leveldb/client
+db_path=/home/jiamin/speculative/GLaKV/src
 output_path=/home/jiamin/speculative/out
 
 exp_name="diff_c_p"
@@ -26,7 +26,7 @@ do
         ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 >> ${output_path}/${exp_name}&
 EOF
         sleep 2
-        ${db_path}/glakv_client -e -s 1000000 -c ${c} -n 20000
+        ${db_path}/glakv_client -e -s 1000000 -c ${c} -n $1
         sleep 1
     done
 done
