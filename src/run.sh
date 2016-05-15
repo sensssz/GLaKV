@@ -9,7 +9,7 @@ output_path=/home/jiamin/speculative/out
 num_exp=10000
 exp_name="diff_c_p"
 
-if [[$# -eq 1]]; then
+if [[ $# -eq 1 ]]; then
     num_exp=$1
 fi
 
