@@ -20,6 +20,7 @@ DB::DB(string &dir, uint64_t cache_size) : cache(cache_size) {
         dir += '/';
     }
     create_if_not_exists(dir);
+    dir += "glakv.db";
     db_file = open(dir.c_str(), O_RDWR);
     read(db_file, &(DB::db_size), sizeof(uint32_t));
 }
@@ -83,10 +84,10 @@ void DB::del(uint32_t key) {
 }
 
 void DB::create_if_not_exists(string &dir) {
-    ifstream file(dir + "glakv.src");
+    ifstream file(dir + "glakv.db");
     if (file.fail()) {
         // Need to create a new file
-        ofstream db_file(dir + "glakv.src");
+        ofstream db_file(dir + "glakv.db");
         char *buf = new char[BUF_SIZE];
         bzero(buf, BUF_SIZE);
         uint64_t total_size = sizeof(uint32_t) + UINT32_MAX * ENTRY_SIZE;
