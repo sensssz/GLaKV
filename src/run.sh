@@ -20,7 +20,7 @@ ssh salat3 "rm ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 
 for p in `seq 0 5`;
 do
-    for((c=1;c<=128;c*=2))
+    for((c=1;c<=32;c*=2))
     do
         if [[ ! -z ${quit+x} ]]; then
             exit 0
