@@ -2,4 +2,4 @@ all:
 	$(MAKE) -C src
 
 clean:
-	$(MAKE) -C db clean
+	$(MAKE) -C src clean
