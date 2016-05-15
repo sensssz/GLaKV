@@ -22,7 +22,6 @@
 using std::fstream;
 using std::list;
 using std::pair;
-using std::mutex;
 using std::string;
 using std::unordered_map;
 

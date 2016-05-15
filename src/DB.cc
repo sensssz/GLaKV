@@ -21,7 +21,7 @@ DB::DB(string &dir, uint64_t cache_size) : cache(cache_size) {
     }
     create_if_not_exists(dir);
     db_file = open(dir.c_str(), O_RDWR);
-    read(db_file, (void *) &DB::db_size, sizeof(uint32_t));
+    read(db_file, &(DB::db_size), sizeof(uint32_t));
 }
 
 DB::~DB() {
@@ -65,7 +65,7 @@ void DB::put(uint32_t key, string &val) {
 
     // Update kv-pair and size
     lseek(db_file, 0, SEEK_SET);
-    write(db_file, (const void *) &DB::db_size, sizeof(uint32_t));
+    write(db_file, &(DB::db_size), sizeof(uint32_t));
     lseek(db_file, offset, SEEK_SET);
     write(db_file, buffer, ENTRY_SIZE);
     fsync(db_file);
