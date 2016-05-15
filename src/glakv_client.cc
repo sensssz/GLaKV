@@ -22,7 +22,6 @@
 #define PUT         "Put"
 #define DEL         "Del"
 #define QUIT        "Quit"
-#define DB_SIZE     1000000
 #define NUM_CLIENTS 128
 #define NUM_EXP     100000
 #define INT_LEN     (sizeof(uint64_t) / sizeof(char))
