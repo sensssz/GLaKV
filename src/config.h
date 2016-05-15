@@ -7,7 +7,7 @@
 
 #define KEY_LEN         (sizeof(uint32_t) / sizeof(char))
 #define VAL_LEN         1024
-#define DB_SIZE         1000000
+#define DB_SIZE         500000
 #define NUM_PREFETCH    5
 
 #endif //GLAKV_CONFIG_H

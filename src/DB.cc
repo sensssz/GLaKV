@@ -34,8 +34,8 @@ bool DB::get(uint32_t key, string &val) {
         shared_lock<shared_mutex> read_lock(mutex);
         uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
         lseek(db_file, offset, SEEK_SET);
-        char buffer[1 + VAL_LEN];
-        read(db_file, buffer, VAL_LEN);
+        char buffer[ENTRY_SIZE];
+        read(db_file, buffer, ENTRY_SIZE);
         read_lock.unlock();
         if (buffer[0] == 1) {
             val = string(buffer + 1 + KEY_LEN, VAL_LEN);
@@ -91,7 +91,7 @@ void DB::create_if_not_exists(string &dir) {
         char *buf = new char[BUF_SIZE];
         bzero(buf, BUF_SIZE);
         uint64_t total_size = sizeof(uint32_t) + UINT32_MAX * ENTRY_SIZE;
-        uint64_t count = total_size / BUF_SIZE;
+        uint64_t count = (2 * total_size - 1) / BUF_SIZE;
         for (uint64_t i = 0; i < count; ++i) {
             db_file.write(buf, BUF_SIZE);
         }
