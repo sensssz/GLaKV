@@ -31,7 +31,7 @@ do
         ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 >> ${output_path}/${exp_name}&
 EOF
         sleep 2
-        ${db_path}/glakv_client -e -s 1000000 -c ${c} -n ${num_exp}
+        ${db_path}/glakv_client -e -c ${c} -n ${num_exp}
         sleep 1
     done
 done
