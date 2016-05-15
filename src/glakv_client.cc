@@ -87,7 +87,6 @@ uint64_t get_uint64(char *buf) {
 }
 
 string send_get(int sockfd, uint32_t key) {
-    cout << "GET: " << key << endl;
     char cmd_buf[BUF_LEN];
     char res_buf[BUF_LEN];
     size_t GET_LEN = strlen(GET);
@@ -142,7 +141,7 @@ void load_data(uint32_t db_size) {
             char val_buf[VAL_LEN];
             send_put(sockfd, key, val_buf, VAL_LEN);
         }
-        uint32_t percentage_done = (key * 100) / db_size;
+        uint32_t percentage_done = (key * 50) / db_size;
         string progress_bar(percentage_done, '.');
         cout << "Loading" << progress_bar << percentage_done << '%' << endl;
     }
@@ -162,7 +161,7 @@ void execute(uint32_t database_size, int num_exps) {
     std::mt19937 generator(rd());
     std::uniform_int_distribution<uint32_t> uni_dist(0, database_size - 1);
     exponential_distribution exp_dist(lambda, database_size);
-    uint32_t key = (uint32_t) (rand() % database_size);
+    uint32_t key = uni_dist(generator);
     for (int count = 0; count < num_exps; ++count) {
         send_get(sockfd, key);
         if (count % 10 == 0) {

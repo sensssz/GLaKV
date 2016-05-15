@@ -183,7 +183,6 @@ void serve_client(int sockfd, DB &db, vector<double> &latencies, mutex &lock) {
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             is_get = true;
             key = get_uint32(buffer + GET_LEN);
-            cout << "GET: " << key << endl;
             string val;
             auto start = std::chrono::high_resolution_clock::now();
             bool get_res = db.get(key, val);
