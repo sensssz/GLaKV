@@ -2,9 +2,9 @@
 // Created by Jiamin Huang on 5/13/16.
 //
 
+#include "DB.h"
 #include "config.h"
 #include "exponential_distribution.h"
-#include "DB.h"
 
 #include <getopt.h>
 #include <unistd.h>

@@ -1,5 +1,5 @@
 all:
-	$(MAKE) -C db
+	$(MAKE) -C src
 
 clean:
 	$(MAKE) -C db clean
