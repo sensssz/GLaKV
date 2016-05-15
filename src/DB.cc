@@ -21,7 +21,7 @@ DB::DB(string &dir, uint64_t cache_size) : cache(cache_size) {
     }
     create_if_not_exists(dir);
     db_file = open(dir.c_str(), O_RDWR);
-    read(db_file, &size, sizeof(uint32_t));
+    read(db_file, (void *) &DB::db_size, sizeof(uint32_t));
 }
 
 DB::~DB() {
@@ -30,7 +30,7 @@ DB::~DB() {
 
 bool DB::get(uint32_t key, string &val) {
     if (!cache.get(key, val)) {
-        shared_lock read_lock(mutex);
+        shared_lock<shared_mutex> read_lock(mutex);
         uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
         lseek(db_file, offset, SEEK_SET);
         char buffer[1 + VAL_LEN];
@@ -53,7 +53,7 @@ void DB::put(uint32_t key, string &val) {
     buffer[0] = 1;      // Entry is in use
     memcpy(buffer + 1, val.data(), val.size());
 
-    unique_lock lock(mutex);
+    unique_lock<shared_mutex> lock(mutex);
     uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
 
     // Update size if necessary
@@ -65,7 +65,7 @@ void DB::put(uint32_t key, string &val) {
 
     // Update kv-pair and size
     lseek(db_file, 0, SEEK_SET);
-    write(db_file, &db_size, sizeof(uint32_t));
+    write(db_file, (const void *) &DB::db_size, sizeof(uint32_t));
     lseek(db_file, offset, SEEK_SET);
     write(db_file, buffer, ENTRY_SIZE);
     fsync(db_file);
@@ -73,7 +73,7 @@ void DB::put(uint32_t key, string &val) {
 
 void DB::del(uint32_t key) {
     cache.del(key);
-    unique_lock lock(mutex);
+    unique_lock<shared_mutex> lock(mutex);
     uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
     lseek(db_file, offset, SEEK_SET);
     char in_use = 0;

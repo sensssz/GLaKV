@@ -152,7 +152,9 @@ void prefetch_kv(DB &db, uint32_t key) {
 
 void prefetch_for_key(DB &db, uint32_t key) {
     if (prefetch) {
+        uint32_t original_key = key;
         for (int count = 0; count < num_prefetch; ++count) {
+            key = (original_key + count + db.size() / 3) % db.size();
             thread t(prefetch_kv, db, key);
             t.detach();
         }

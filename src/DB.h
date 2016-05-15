@@ -41,7 +41,7 @@ public:
     LRUCache(uint64_t capacity_in) : capacity(capacity_in) {}
 
     bool put(uint32_t key, string &val) {
-        unique_lock lock(mutex);
+        unique_lock<shared_mutex> lock(mutex);
         auto map_iter = cache.find(key);
         if (map_iter != cache.end()) {
             // Already in the cache
@@ -62,7 +62,7 @@ public:
     }
 
     bool get(uint32_t key, string &val) {
-        shared_lock read_lock(mutex);
+        shared_lock<shared_mutex> read_lock(mutex);
         auto map_iter = cache.find(key);
         if (map_iter != cache.end()) {
             val = cache[key].first;
@@ -75,7 +75,7 @@ public:
     }
 
     void del(uint32_t key) {
-        unique_lock lock(mutex);
+        unique_lock<shared_mutex> lock(mutex);
         auto map_iter = cache.find(key);
         if (map_iter != cache.end()) {
             lru_keys.erase(map_iter->second.second);
