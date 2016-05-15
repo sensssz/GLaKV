@@ -43,6 +43,7 @@ bool DB::get(uint32_t key, string &val) {
         }
         return false;
     }
+    return true;
 }
 
 void DB::put(uint32_t key, string &val) {
