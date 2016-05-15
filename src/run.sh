@@ -6,7 +6,12 @@ salat3=salat3.eecs.umich.edu
 db_path=/home/jiamin/speculative/GLaKV/src
 output_path=/home/jiamin/speculative/out
 
+num_exp=10000
 exp_name="diff_c_p"
+
+if [[$# -eq 1]]; then
+    num_exp=$1
+fi
 
 trap 'quit=1' INT
 
@@ -26,7 +31,7 @@ do
         ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 >> ${output_path}/${exp_name}&
 EOF
         sleep 2
-        ${db_path}/glakv_client -e -s 1000000 -c ${c} -n $1
+        ${db_path}/glakv_client -e -s 1000000 -c ${c} -n ${num_exp}
         sleep 1
     done
 done
