@@ -1,8 +1,4 @@
-CUSTOM_USR = /home/jiamin/usr
-ROOT = ..
-INCLUDE = -I$(CUSTOM_USR)/include -I$(ROOT)/include
-LDFLAGS = -L$(CUSTOM_USR)/lib
-CXXFLAGS = -std=c++11 -c -O3 -g $(INCLUDE)
+CXXFLAGS = -std=c++11 -c -O3 -g
 OBJS = DB.o glakv_client.o glakv_server.o exponential_distribution.o
 
 all: exec
@@ -10,8 +6,8 @@ all: exec
 test: exp_dist_test
 
 exec: $(OBJS)
-	$(CC) $(LDFLAGS) DB.o glakv_server.o -o glakv_server
-	$(CC) $(LDFLAGS) DB.o glakv_client.o exponential_distribution.o -o glakv_client
+	$(CC) DB.o glakv_server.o -o glakv_server
+	$(CC) DB.o glakv_client.o exponential_distribution.o -o glakv_client
 
 glakv_client.o: glakv_client.cc config.h
 	$(CC) $(CXXFLAGS) glakv_client.cc -o glakv_client.o
