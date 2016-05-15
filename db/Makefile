@@ -3,15 +3,15 @@ ROOT = ..
 INCLUDE = -I$(CUSTOM_USR)/include -I$(ROOT)/include
 LDFLAGS = -L$(CUSTOM_USR)/lib
 CXXFLAGS = -std=c++11 -c -O3 -g $(INCLUDE)
-OBJS = glakv_client.o glakv_server.o exponential_distribution.o
+OBJS = DB.o glakv_client.o glakv_server.o exponential_distribution.o
 
 all: exec
 
 test: exp_dist_test
 
 exec: $(OBJS)
-	$(CC) $(LDFLAGS) glakv_server.o -o glakv_server
-	$(CC) $(LDFLAGS) glakv_client.o exponential_distribution.o -o glakv_client
+	$(CC) $(LDFLAGS) DB.o glakv_server.o -o glakv_server
+	$(CC) $(LDFLAGS) DB.o glakv_client.o exponential_distribution.o -o glakv_client
 
 glakv_client.o: glakv_client.cc config.h
 	$(CC) $(CXXFLAGS) glakv_client.cc -o glakv_client.o
@@ -27,6 +27,9 @@ exp_dist_test.o: exp_dist_test.cc
 
 exponential_distribution.o: exponential_distribution.cc exponential_distribution.h
 	$(CC) $(CXXFLAGS) exponential_distribution.cc -o exponential_distribution.o
+
+DB.o: db.cc DB.h config.h
+	$(CC) $(CXXFLAGS) DB.cc -o DB.o
 
 clean:
 	rm $(OBJS)
