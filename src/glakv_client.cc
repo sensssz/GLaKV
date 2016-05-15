@@ -4,7 +4,7 @@
 
 #include "config.h"
 #include "exponential_distribution.h"
-#include <db.h>
+#include "DB.h"
 
 #include <getopt.h>
 #include <unistd.h>

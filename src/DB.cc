@@ -2,7 +2,7 @@
 // Created by Jiamin Huang on 5/14/16.
 //
 
-#include <DB.h>
+#include "DB.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -82,10 +82,10 @@ void DB::del(uint32_t key) {
 }
 
 void DB::create_if_not_exists(string &dir) {
-    ifstream file(dir + "glakv.db");
+    ifstream file(dir + "glakv.src");
     if (file.fail()) {
         // Need to create a new file
-        ofstream db_file(dir + "glakv.db");
+        ofstream db_file(dir + "glakv.src");
         char *buf = new char[BUF_SIZE];
         bzero(buf, BUF_SIZE);
         uint64_t total_size = sizeof(uint32_t) + UINT32_MAX * ENTRY_SIZE;

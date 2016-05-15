@@ -1,7 +1,7 @@
 #include "config.h"
 #include "exponential_distribution.h"
 
-#include <DB.h>
+#include "DB.h"
 #include <getopt.h>
 #include <unistd.h>
 #include <sys/types.h>

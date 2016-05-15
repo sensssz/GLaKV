@@ -5,7 +5,7 @@
 #ifndef GLAKV_DB_H
 #define GLAKV_DB_H
 
-#include <config.h>
+#include "../db/config.h"
 
 #include <fstream>
 #include <list>
