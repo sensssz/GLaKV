@@ -100,7 +100,7 @@ string send_get(int sockfd, uint32_t key) {
         error("ERROR receiving result");
     }
     assert(res_buf[0] == 1);
-    uint64_t vlen = get_uint32(res_buf + 1);
+    uint64_t vlen = get_uint64(res_buf + 1);
     string val(res_buf + 1 + INT_LEN, vlen);
     return val;
 }

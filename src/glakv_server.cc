@@ -200,9 +200,6 @@ void serve_client(int sockfd, DB &db, vector<double> &latencies, mutex &lock) {
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
             key = get_uint32(buffer + PUT_LEN);
             uint64_t vlen = get_uint64(buffer + PUT_LEN + KEY_LEN);
-            if (len != PUT_LEN + KEY_LEN + INT_LEN + vlen) {
-                cout << len << "," << PUT_LEN + KEY_LEN + INT_LEN + vlen << endl;
-            }
             char *val_buf = buffer + PUT_LEN + KEY_LEN + INT_LEN;
             string val(val_buf, vlen);
             auto start = std::chrono::high_resolution_clock::now();

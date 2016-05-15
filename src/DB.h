@@ -46,8 +46,9 @@ public:
         if (map_iter != cache.end()) {
             // Already in the cache
             map_iter->second.first = val;
-            auto list_iter = map_iter->second.second;
-            lru_keys.erase(list_iter);
+            lru_keys.erase(map_iter->second.second);
+            lru_keys.push_front(key);
+            map_iter->second.second = lru_keys.begin();
             return true;
         } else {
             if (lru_keys.size() == capacity) {
