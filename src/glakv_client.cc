@@ -87,7 +87,6 @@ uint64_t get_uint64(char *buf) {
 }
 
 string send_get(int sockfd, uint32_t key) {
-    cout << "GET: " << key << endl;
     char cmd_buf[BUF_LEN];
     char res_buf[BUF_LEN];
     size_t GET_LEN = strlen(GET);
