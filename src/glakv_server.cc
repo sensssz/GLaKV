@@ -297,6 +297,7 @@ int main(int argc, char *argv[])
         t.join();
     }
 
+    pool.shutdown();
     close(sockfd);
     return 0;
 }
