@@ -15,7 +15,6 @@ using std::chrono::microseconds;
 
 worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_mutex, condition_variable &cv)
         : quit(false), worker([&queue, &db, &queue_mutex, &cv, this] () {
-            cout << "Thread " << std::this_thread::get_id() << " is starting" << endl;
             task db_task;
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
@@ -58,6 +57,7 @@ worker_thread::worker_thread(worker_thread &&other)
         : quit(other.quit), worker(std::move(other.worker)) {}
 
 void worker_thread::set_stop() {
+    cout << "Thread " << worker.get_id() << " has the stop flag" << endl;
     quit = true;
 }
 
