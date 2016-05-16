@@ -10,7 +10,7 @@ all: exec
 test: exp_dist_test
 
 exec: $(OBJS)
-	$(CC) $(LDFLAGS) DB.o glakv_server.o -o glakv_server
+	$(CC) $(LDFLAGS) DB.o glakv_server.o worker_thread.o thread_pool.o -o glakv_server
 	$(CC) $(LDFLAGS) DB.o glakv_client.o exponential_distribution.o -o glakv_client
 
 glakv_client.o: glakv_client.cc config.h
