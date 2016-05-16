@@ -36,9 +36,6 @@ struct task {
               vlen(vlen_in), callback(std::move(callback_in)) {
         birth_time = std::chrono::high_resolution_clock::now();
     }
-    task(task &&other)
-            : operation(other.operation), key(other.key), val(other.val), vlen(other.vlen),
-              birth_time(std::move(other.birth_time)), callback(std::move(callback)) {}
 };
 
 #endif //GLAKV_TASK_H
