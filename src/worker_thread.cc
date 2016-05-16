@@ -51,7 +51,7 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db)
         }) {}
 
 worker_thread::worker_thread(worker_thread &&other)
-        : quit(other.quit), worker(std::move(other.worker_thread)) {}
+        : quit(other.quit), worker(std::move(other.worker)) {}
 
 void worker_thread::stop() {
     quit = true;
