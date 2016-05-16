@@ -19,7 +19,6 @@ thread_pool::thread_pool(DB &db, size_t pool_size) : quit(false) {
 }
 
 thread_pool::~thread_pool() {
-    cout << "Shutting down thread pool" << endl;
     quit = true;
     std::unique_lock<std::mutex> lock(queue_mutex);
     cv.notify_all();
