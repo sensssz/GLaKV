@@ -15,14 +15,12 @@ using std::chrono::microseconds;
 
 worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_mutex, condition_variable &cv)
         : quit(false), worker([&queue, &db, &queue_mutex, &cv, this] () {
+            cout << "Thread " << std::this_thread::get_id() << " is starting" << endl;
             task db_task;
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
                     std::unique_lock<mutex> lock(queue_mutex);
                     cv.wait(lock, [&queue, &db_task, this] {
-                        if (quit) {
-                            cout << "Should quit now" << endl;
-                        }
                         return quit || queue.try_dequeue(db_task);
                     });
                     continue;
@@ -53,6 +51,7 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_
                 db_task.callback(success, val, diff.count());
                 cout << "Task finished" << endl;
             }
+            cout << "Thread " << std::this_thread::get_id() << " is quiting" << endl;
         }) {}
 
 worker_thread::worker_thread(worker_thread &&other)
