@@ -14,7 +14,7 @@ thread_pool::thread_pool(DB &db) : thread_pool(db, 5) {
 
 thread_pool::thread_pool(DB &db, size_t pool_size) : quit(false) {
     for (size_t count = 0; count < pool_size; ++count) {
-        workers.emplace_back(task_queue, quit, db, queue_mutex, cv);
+        workers.emplace_back(task_queue, quit, db);
     }
 }
 
