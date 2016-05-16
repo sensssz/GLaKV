@@ -12,7 +12,7 @@ using std::chrono::microseconds;
 
 worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in) :
         task_queue(queue), db(db_in), quit(false),
-        worker([&this] () {
+        worker([this] () {
             task db_task;
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
