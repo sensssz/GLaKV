@@ -19,9 +19,7 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
                     std::unique_lock<mutex> lock(queue_mutex);
-                    cv.wait(lock, [&queue, &db_task, this] {
-                        return quit || queue.try_dequeue(db_task);
-                    });
+                    cv.wait(lock);
                     continue;
                 }
                 cout << "Task retrieved. Processing..." << endl;
