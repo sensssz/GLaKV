@@ -5,16 +5,18 @@
 #include "worker_thread.h"
 
 #include <string>
+#include <chrono>
 
 using std::string;
+using std::chrono::microseconds;
 
 worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in) : task_queue(queue), db(db_in), quit(false) {
-    worker.thread([] () {
+    worker = thread([&quit, &queue, &db] () {
         task db_task;
         while (!quit) {
             if (!queue.try_dequeue(db_task)) {
                 // No new task. Sleep for 2ms
-                std::this_thread::sleep_for(2000000);
+                std::this_thread::sleep_for(microseconds(2));
                 continue;
             }
             string val;
