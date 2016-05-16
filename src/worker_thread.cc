@@ -11,7 +11,6 @@
 using std::cout;
 using std::endl;
 using std::string;
-using std::unique_lock;
 using std::chrono::microseconds;
 
 worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_mutex, condition_variable &cv)
