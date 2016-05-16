@@ -178,7 +178,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
-            pool.submit_task({get, key, [] (bool success, string &val, double time) {
+            pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock] (bool success, string &val, double time) {
                 char res[BUF_LEN];
                 if (success) {
                     res[0] = 1;
@@ -192,7 +192,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 }
                 if (write(sockfd, res, res_len) != res_len) {
                     cerr << "Error sending result to client" << endl;
-                    break;
+                    return;
                 }
                 lock.lock();
                 latencies.push_back(time);
@@ -202,10 +202,10 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             key = get_uint32(buffer + PUT_LEN);
             uint64_t vlen = get_uint64(buffer + PUT_LEN + KEY_LEN);
             char *val_buf = buffer + PUT_LEN + KEY_LEN + INT_LEN;
-            pool.submit_task({put, key, val_buf, vlen, [] (bool success, string &val, double time) {
+            pool.submit_task({put, key, val_buf, vlen, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
                 if (write(sockfd, &success, 1) != 1) {
                     cerr << "Error sending result to client" << endl;
-                    break;
+                    return;
                 }
                 lock.lock();
                 latencies.push_back(time);
@@ -213,10 +213,10 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             }});
         } else if (strncmp(DEL, buffer, DEL_LEN) == 0) {
             key = get_uint32(buffer + DEL_LEN);
-            pool.submit_task({del, key, [] (bool success, string &val, double time) {
+            pool.submit_task({del, key, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
                 if (write(sockfd, &success, 1) != 1) {
                     cerr << "Error sending result to client" << endl;
-                    break;
+                    return;
                 }
                 lock.lock();
                 latencies.push_back(time);
