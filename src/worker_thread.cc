@@ -21,7 +21,6 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                     std::this_thread::sleep_for(microseconds(2));
                     continue;
                 }
-                cout << "Task retrieved. Processing..." << endl;
                 string val;
                 bool success = true;
                 auto start = std::chrono::high_resolution_clock::now();
@@ -43,11 +42,8 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                 }
                 auto end = std::chrono::high_resolution_clock::now();
                 auto diff = end - start;
-                cout << "Invoking callback" << endl;
                 db_task.callback(success, val, diff.count());
-                cout << "Task finished" << endl;
             }
-            cout << "Thread " << this << " is quiting" << endl;
         }) {}
 
 worker_thread::worker_thread(worker_thread &&other)
