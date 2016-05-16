@@ -16,9 +16,7 @@ using moodycamel::ConcurrentQueue;
 
 class worker_thread {
 private:
-    ConcurrentQueue<task> &task_queue;
     thread worker;
-    DB &db;
     bool quit;
 public:
     worker_thread(ConcurrentQueue<task> &queue, DB &db);
