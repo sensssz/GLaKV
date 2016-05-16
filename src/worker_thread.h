@@ -23,7 +23,7 @@ private:
     thread worker;
     bool &quit;
 public:
-    worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db, mutex &queue_mutex, condition_variable &cv);
+    worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db);
     worker_thread(worker_thread &&other);
     void join();
 };

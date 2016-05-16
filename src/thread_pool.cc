@@ -20,9 +20,6 @@ thread_pool::thread_pool(DB &db, size_t pool_size) : quit(false) {
 
 thread_pool::~thread_pool() {
     quit = true;
-    std::unique_lock<std::mutex> lock(queue_mutex);
-    cv.notify_all();
-    lock.unlock();
     for (auto &worker : workers) {
         worker.join();
     }
@@ -30,5 +27,4 @@ thread_pool::~thread_pool() {
 
 void thread_pool::submit_task(task db_task) {
     task_queue.enqueue(std::move(db_task));
-    cv.notify_one();
 }
