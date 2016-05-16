@@ -18,8 +18,8 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db) :
             task db_task;
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
-                    // No new task. Sleep for 2ms
-                    std::this_thread::sleep_for(microseconds(2));
+                    cout << "No task in queue" << endl;
+                    std::this_thread::sleep_for(microseconds(10));
                     continue;
                 }
                 cout << "Task retrieved. Processing..." << endl;
