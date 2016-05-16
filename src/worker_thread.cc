@@ -14,15 +14,12 @@ using std::string;
 using std::chrono::microseconds;
 
 worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_mutex, condition_variable &cv)
-        : quit(false), worker([&queue, &db, &queue_mutex, &cv, this] () {
+        : quit(false), worker([&queue, &db, &queue_mutex, &cv, this] {
             task db_task;
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
                     std::unique_lock<mutex> lock(queue_mutex);
-                    cv.wait(lock, [&queue, &db_task, this] {
-                        cout << this << "->quit: " << quit << endl;
-                        return quit || queue.try_dequeue(db_task);
-                    });
+                    cv.wait(lock);
                     continue;
                 }
                 cout << "Task retrieved. Processing..." << endl;
