@@ -296,8 +296,6 @@ int main(int argc, char *argv[])
     for (auto &t : threads) {
         t.join();
     }
-
-    pool.shutdown();
     close(sockfd);
     return 0;
 }
