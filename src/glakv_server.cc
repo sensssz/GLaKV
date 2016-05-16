@@ -164,7 +164,6 @@ void prefetch_for_key(DB &db, uint32_t key) {
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
     reported = false;
     char buffer[BUF_LEN];
-    uint64_t res_len = 0;
     uint32_t key;
     while (!quit) {
         bzero(buffer, BUF_LEN);
@@ -180,6 +179,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             key = get_uint32(buffer + GET_LEN);
             pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock] (bool success, string &val, double time) {
                 char res[BUF_LEN];
+                uint64_t res_len = 0;
                 if (success) {
                     res[0] = 1;
                     store_uint64(res + 1, val.size());

@@ -23,17 +23,11 @@ struct task {
 
     task() : operation(noop), key(0), val(nullptr), vlen(0) {}
     task(opcode op, uint32_t key_in, function<void(bool, string &, double)> &&callback_in)
-    : operation(op), key(key_in), val(nullptr),
-    vlen(0), callback(std::move(callback_in)) {}
-    task(opcode op, uint32_t key_in, function<void(bool, string &, double)> callback_in)
             : operation(op), key(key_in), val(nullptr),
-              vlen(0), callback(callback_in) {}
+              vlen(0), callback(std::move(callback_in)) {}
     task(opcode op, uint32_t key_in, char *val_in, size_t vlen_in, function<void(bool, string &, double)> &&callback_in)
             : operation(op), key(key_in), val(val_in),
               vlen(vlen_in), callback(std::move(callback_in)) {}
-    task(opcode op, uint32_t key_in, char *val_in, size_t vlen_in, function<void(bool, string &, double)> callback_in)
-            : operation(op), key(key_in), val(val_in),
-              vlen(vlen_in), callback(callback_in) {}
 };
 
 #endif //GLAKV_TASK_H
