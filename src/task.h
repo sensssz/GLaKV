@@ -12,7 +12,6 @@
 
 using std::function;
 using std::string;
-using std::chrono::high_resolution_clock::time_point;
 
 enum opcode {get, put, del, noop};
 
@@ -21,7 +20,7 @@ struct task {
     uint32_t    key;
     char       *val;
     size_t      vlen;
-    time_point  birth_time;
+    std::chrono::high_resolution_clock::time_point  birth_time;
     function<void(bool, string&, double)> callback;
 
     task() : operation(noop), key(0), val(nullptr), vlen(0) {
