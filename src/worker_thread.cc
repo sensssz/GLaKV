@@ -13,8 +13,8 @@ using std::endl;
 using std::string;
 using std::chrono::microseconds;
 
-worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_mutex, condition_variable &cv)
-        : quit(false), worker([&queue, &db, &queue_mutex, &cv, this] {
+worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db, mutex &queue_mutex, condition_variable &cv)
+        : quit(quit_in), worker([&queue, &db, &queue_mutex, &cv, this] {
             task db_task;
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
@@ -54,11 +54,6 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_
 
 worker_thread::worker_thread(worker_thread &&other)
         : quit(other.quit), worker(std::move(other.worker)) {}
-
-void worker_thread::set_stop() {
-    cout << "Thread " << this << " has the stop flag" << endl;
-    quit = true;
-}
 
 void worker_thread::join() {
     worker.join();

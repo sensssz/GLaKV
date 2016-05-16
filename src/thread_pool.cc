@@ -14,15 +14,13 @@ thread_pool::thread_pool(DB &db) : thread_pool(db, 5) {
 
 thread_pool::thread_pool(DB &db, size_t pool_size) {
     for (size_t count = 0; count < pool_size; ++count) {
-        workers.emplace_back(task_queue, db, queue_mutex, cv);
+        workers.emplace_back(task_queue, quit, db, queue_mutex, cv);
     }
 }
 
 thread_pool::~thread_pool() {
     cout << "Shutting down thread pool" << endl;
-    for (auto &worker : workers) {
-        worker.set_stop();
-    }
+    quit = true;
     std::unique_lock<std::mutex> lock(queue_mutex);
     cv.notify_all();
     lock.unlock();

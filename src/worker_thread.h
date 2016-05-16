@@ -21,11 +21,10 @@ using moodycamel::ConcurrentQueue;
 class worker_thread {
 private:
     thread worker;
-    bool quit;
+    bool &quit;
 public:
-    worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_mutex, condition_variable &cv);
+    worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db, mutex &queue_mutex, condition_variable &cv);
     worker_thread(worker_thread &&other);
-    void set_stop();
     void join();
 };
 

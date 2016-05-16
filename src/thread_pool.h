@@ -24,6 +24,7 @@ private:
     vector<worker_thread> workers;
     mutex queue_mutex;
     condition_variable cv;
+    bool quit;
 public:
     thread_pool(DB &db);
     thread_pool(DB &db, size_t pool_size);
