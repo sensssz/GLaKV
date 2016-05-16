@@ -23,7 +23,9 @@ thread_pool::~thread_pool() {
     for (auto &worker : workers) {
         worker.set_stop();
     }
+    std::unique_lock<std::mutex> lock(queue_mutex);
     cv.notify_all();
+    lock.unlock();
     for (auto &worker : workers) {
         worker.join();
     }

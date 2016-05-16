@@ -20,6 +20,7 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_
                 if (!queue.try_dequeue(db_task)) {
                     std::unique_lock<mutex> lock(queue_mutex);
                     cv.wait(lock);
+                    cout << this << " is woken up" << endl;
                     continue;
                 }
                 cout << "Task retrieved. Processing..." << endl;
