@@ -19,10 +19,14 @@ thread_pool::~thread_pool() {
     }
 }
 
-void thread_pool::submit_task(task &&db_task) {
+void thread_pool::submit_task(task db_task) {
     task_queue.enqueue(db_task);
 }
 
 void thread_pool::submit_task(task &db_task) {
+    task_queue.enqueue(db_task);
+}
+
+void thread_pool::submit_task(task &&db_task) {
     task_queue.enqueue(db_task);
 }
