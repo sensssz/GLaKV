@@ -11,15 +11,16 @@
 using std::cout;
 using std::endl;
 using std::string;
+using std::unique_lock;
 using std::chrono::microseconds;
 
-worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db)
-        : quit(false), worker([&queue, &db, this] () {
+worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_mutex, condition_variable &cv)
+        : quit(false), worker([&queue, &db, &queue_mutex, &cv, this] () {
             task db_task;
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
-                    cout << "No task in queue" << endl;
-                    std::this_thread::sleep_for(microseconds(10));
+                    unique_lock lock(queue_mutex);
+                    cv.wait(lock, [&queue, &db_task] {queue.try_dequeue(db_task);});
                     continue;
                 }
                 cout << "Task retrieved. Processing..." << endl;

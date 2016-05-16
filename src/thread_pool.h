@@ -22,6 +22,8 @@ class thread_pool {
 private:
     ConcurrentQueue<task> task_queue;
     vector<worker_thread> workers;
+    mutex queue_mutex;
+    condition_variable cv;
 public:
     thread_pool(DB &db);
     thread_pool(DB &db, size_t pool_size);
