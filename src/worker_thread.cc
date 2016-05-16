@@ -23,7 +23,6 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                 }
                 string val;
                 bool success = true;
-                auto start = std::chrono::high_resolution_clock::now();
                 switch (db_task.operation) {
                     case get:
                         success = db.get(db_task.key, val);
@@ -41,7 +40,7 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                         break;
                 }
                 auto end = std::chrono::high_resolution_clock::now();
-                auto diff = end - start;
+                auto diff = end - db_task.birth_time;
                 db_task.callback(success, val, diff.count());
             }
         }) {}
