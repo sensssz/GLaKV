@@ -1,6 +1,7 @@
 #include "DB.h"
 #include "config.h"
 #include "exponential_distribution.h"
+#include "thread_pool.h"
 
 #include <getopt.h>
 #include <unistd.h>
@@ -160,18 +161,14 @@ void prefetch_for_key(DB &db, uint32_t key) {
     }
 }
 
-void serve_client(int sockfd, DB &db, vector<double> &latencies, mutex &lock) {
+void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
     reported = false;
     char buffer[BUF_LEN];
-    char res[BUF_LEN];
     uint64_t res_len = 0;
-    ssize_t len = 0;
-    bool is_get = false;
     uint32_t key;
     while (!quit) {
-        is_get = false;
         bzero(buffer, BUF_LEN);
-        if ((len = read(sockfd, buffer, BUF_LEN)) < 0) {
+        if (read(sockfd, buffer, BUF_LEN) < 0) {
             cerr << "Error reading from client" << endl;
             break;
         }
@@ -179,56 +176,55 @@ void serve_client(int sockfd, DB &db, vector<double> &latencies, mutex &lock) {
         size_t PUT_LEN = strlen(PUT);
         size_t DEL_LEN = strlen(DEL);
         size_t QUIT_LEN = strlen(QUIT);
-        std::chrono::duration<double> diff;
         if (strncmp(GET, buffer, GET_LEN) == 0) {
-            is_get = true;
             key = get_uint32(buffer + GET_LEN);
-            string val;
-            auto start = std::chrono::high_resolution_clock::now();
-            bool get_res = db.get(key, val);
-            auto end = std::chrono::high_resolution_clock::now();
-            diff = end - start;
-            if (get_res) {
-                res[0] = 1;
-                store_uint64(res + 1, val.size());
-                memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
-                res_len = 1 + INT_LEN + val.size();
-            } else {
-                res[0] = 0;
-                res_len = 1;
-            }
+            pool.submit_task({get, key, [] (bool success, string &val, double time) {
+                char res[BUF_LEN];
+                if (success) {
+                    res[0] = 1;
+                    store_uint64(res + 1, val.size());
+                    memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
+                    res_len = 1 + INT_LEN + val.size();
+                    prefetch_for_key(db, key);
+                } else {
+                    res[0] = 0;
+                    res_len = 1;
+                }
+                if (write(sockfd, res, res_len) != res_len) {
+                    cerr << "Error sending result to client" << endl;
+                    break;
+                }
+                lock.lock();
+                latencies.push_back(time);
+                lock.unlock();
+            }});
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
             key = get_uint32(buffer + PUT_LEN);
             uint64_t vlen = get_uint64(buffer + PUT_LEN + KEY_LEN);
             char *val_buf = buffer + PUT_LEN + KEY_LEN + INT_LEN;
-            string val(val_buf, vlen);
-            auto start = std::chrono::high_resolution_clock::now();
-            db.put(key, val);
-            auto end = std::chrono::high_resolution_clock::now();
-            diff = end - start;
-            res[0] = 1;
-            res_len = 1;
+            pool.submit_task({put, key, val_buf, vlen, [] (bool success, string &val, double time) {
+                if (write(sockfd, &success, 1) != 1) {
+                    cerr << "Error sending result to client" << endl;
+                    break;
+                }
+                lock.lock();
+                latencies.push_back(time);
+                lock.unlock();
+            }});
         } else if (strncmp(DEL, buffer, DEL_LEN) == 0) {
             key = get_uint32(buffer + DEL_LEN);
-            auto start = std::chrono::high_resolution_clock::now();
-            db.del(key);
-            auto end = std::chrono::high_resolution_clock::now();
-            diff = end - start;
-            res[0] = 1;
-            res_len = 1;
+            pool.submit_task({del, key, [] (bool success, string &val, double time) {
+                if (write(sockfd, &success, 1) != 1) {
+                    cerr << "Error sending result to client" << endl;
+                    break;
+                }
+                lock.lock();
+                latencies.push_back(time);
+                lock.unlock();
+            }});
         } else if (strncmp(QUIT, buffer, QUIT_LEN) == 0) {
             break;
         }
-        if (is_get) {
-            prefetch_for_key(db, key);
-        }
-        if (write(sockfd, res, res_len) != res_len) {
-            cerr << "Error sending result to client" << endl;
-            break;
-        }
-        lock.lock();
-        latencies.push_back(diff.count());
-        lock.unlock();
     }
     --num_threads;
     close(sockfd);
@@ -258,6 +254,7 @@ int main(int argc, char *argv[])
     int flags = fcntl(sockfd, F_GETFL, 0);
     fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
     vector<double> latencies;
+    thread_pool pool(db);
     mutex lock;
     int count = 0;
     while (!quit) {
@@ -289,7 +286,7 @@ int main(int argc, char *argv[])
         }
         flags = fcntl(newsockfd, F_GETFL, 0);
         fcntl(newsockfd, F_SETFL, flags & ~O_NONBLOCK);
-        thread t(serve_client, newsockfd, std::ref(db), std::ref(latencies), std::ref(lock));
+        thread t(serve_client, newsockfd, std::ref(pool), std::ref(db), std::ref(latencies), std::ref(lock));
         threads.push_back(std::move(t));
         ++num_threads;
     }
