@@ -9,7 +9,7 @@ thread_pool::thread_pool(DB &db) : thread_pool(db, 5) {
 
 thread_pool::thread_pool(DB &db, size_t pool_size) {
     for (size_t count = 0; count < pool_size; ++count) {
-        workers.push_back(std::move(worker_thread(task_queue, db)));
+        workers.emplace_back(task_queue, db);
     }
 }
 

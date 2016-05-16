@@ -20,6 +20,7 @@ private:
     bool quit;
 public:
     worker_thread(ConcurrentQueue<task> &queue, DB &db);
+    worker_thread(worker_thread &&other);
     void stop();
 };
 

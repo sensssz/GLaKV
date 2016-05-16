@@ -9,8 +9,12 @@
 #include "concurrentqueue.h"
 #include "worker_thread.h"
 
+#include <mutex>
+#include <condition_variable>
 #include <vector>
 
+using std::mutex;
+using std::condition_variable;
 using std::vector;
 using moodycamel::ConcurrentQueue;
 
