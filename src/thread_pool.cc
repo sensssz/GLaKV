@@ -19,6 +19,7 @@ thread_pool::thread_pool(DB &db, size_t pool_size) {
 }
 
 thread_pool::~thread_pool() {
+    cout << "Shutting down thread pool" << endl;
     for (auto &worker : workers) {
         worker.set_stop();
     }
