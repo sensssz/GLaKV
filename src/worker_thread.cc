@@ -19,7 +19,7 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_
             while (!quit) {
                 if (!queue.try_dequeue(db_task)) {
                     std::unique_lock<mutex> lock(queue_mutex);
-                    cv.wait(lock, [&queue, &db_task, &quit] {
+                    cv.wait(lock, [&queue, &db_task, this] {
                         cout << this << "->quit: " << quit << endl;
                         return quit || queue.try_dequeue(db_task);
                     });
@@ -51,14 +51,14 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_
                 db_task.callback(success, val, diff.count());
                 cout << "Task finished" << endl;
             }
-            cout << "Thread " << std::this_thread::get_id() << " is quiting" << endl;
+            cout << "Thread " << this << " is quiting" << endl;
         }) {}
 
 worker_thread::worker_thread(worker_thread &&other)
         : quit(other.quit), worker(std::move(other.worker)) {}
 
 void worker_thread::set_stop() {
-    cout << "Thread " << worker.get_id() << " has the stop flag" << endl;
+    cout << "Thread " << this << " has the stop flag" << endl;
     quit = true;
 }
 
