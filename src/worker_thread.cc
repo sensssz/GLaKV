@@ -53,10 +53,10 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_
 worker_thread::worker_thread(worker_thread &&other)
         : quit(other.quit), worker(std::move(other.worker)) {}
 
-void worker_thread::stop() {
+void worker_thread::set_stop() {
     quit = true;
-    worker.join();
 }
 
-
-
+void worker_thread::join() {
+    worker.join();
+}

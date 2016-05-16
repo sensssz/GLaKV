@@ -4,6 +4,11 @@
 
 #include "thread_pool.h"
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
 thread_pool::thread_pool(DB &db) : thread_pool(db, 5) {
 }
 
@@ -14,9 +19,12 @@ thread_pool::thread_pool(DB &db, size_t pool_size) {
 }
 
 thread_pool::~thread_pool() {
+    for (auto &worker : workers) {
+        worker.set_stop();
+    }
     cv.notify_all();
     for (auto &worker : workers) {
-        worker.stop();
+        worker.join();
     }
 }
 

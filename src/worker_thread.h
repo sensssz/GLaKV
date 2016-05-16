@@ -25,7 +25,8 @@ private:
 public:
     worker_thread(ConcurrentQueue<task> &queue, DB &db, mutex &queue_mutex, condition_variable &cv);
     worker_thread(worker_thread &&other);
-    void stop();
+    void set_stop();
+    void join();
 };
 
 
