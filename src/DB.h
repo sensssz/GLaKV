@@ -34,9 +34,9 @@ private:
     typedef pair<string, list<uint32_t>::iterator> val_t;
     unordered_map<uint32_t, val_t> cache;
     list<uint32_t> lru_keys;
-    uint32_t size;
     shared_mutex mutex;
     uint64_t capacity;
+    uint32_t size;
     LRUCache(const LRUCache &) = delete;
 public:
     LRUCache(uint64_t capacity_in) : capacity(capacity_in), size(0) {}
