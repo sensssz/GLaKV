@@ -30,20 +30,17 @@ using boost::shared_mutex;
 using boost::shared_lock;
 using boost::unique_lock;
 
-typedef tstarling::ThreadSafeStringKey String;
-typedef String::HashCompare HashCompare;
-typedef tstarling::ThreadSafeScalableCache<String, string, HashCompare> ScalableCache;
-
 class LRUCache {
 private:
     typedef pair<string, list<uint32_t>::iterator> val_t;
     unordered_map<uint32_t, val_t> cache;
     list<uint32_t> lru_keys;
+    uint32_t size;
     shared_mutex mutex;
     uint64_t capacity;
     LRUCache(const LRUCache &) = delete;
 public:
-    LRUCache(uint64_t capacity_in) : capacity(capacity_in) {}
+    LRUCache(uint64_t capacity_in) : capacity(capacity_in), size(0) {}
 
     bool put(uint32_t key, string &val) {
         unique_lock<shared_mutex> lock(mutex);
@@ -56,11 +53,13 @@ public:
             map_iter->second.second = lru_keys.begin();
             return true;
         } else {
-            if (lru_keys.size() == capacity) {
+            if (size == capacity) {
                 auto last_key = lru_keys.back();
                 lru_keys.pop_back();
                 cache.erase(last_key);
+                --size;
             }
+            ++size;
             lru_keys.push_front(key);
             cache[key] = {val, lru_keys.begin()};
             return false;
@@ -86,6 +85,7 @@ public:
         if (map_iter != cache.end()) {
             lru_keys.erase(map_iter->second.second);
             cache.erase(key);
+            --size;
         }
     }
 };
@@ -95,7 +95,7 @@ private:
     shared_mutex mutex;
     int          db_file;
     uint32_t     db_size;
-    ScalableCache lru;
+    LRUCache     cache;
 
     DB(const DB&) = delete;
     void create_if_not_exists(string &dir);
