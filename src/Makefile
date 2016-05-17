@@ -1,5 +1,6 @@
 CUSTOM_USR = /home/jiamin/usr
-INCLUDE = -I$(CUSTOM_USR)/include
+SRC = .
+INCLUDE = -I$(CUSTOM_USR)/include -I$(SRC)
 LIBS = -lboost_thread
 LDFLAGS = -pg -L$(CUSTOM_USR)/lib $(LIBS)
 CXXFLAGS = -Wall -Werror -std=c++11 -c -O3 $(INCLUDE)
