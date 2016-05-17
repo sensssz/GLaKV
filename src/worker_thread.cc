@@ -14,11 +14,11 @@ using std::string;
 using std::chrono::microseconds;
 
 worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in)
-        : quit(false), task_queue(queue), db(db_in) {}
+        : task_queue(queue), quit(false), db(db_in) {}
 
 worker_thread::worker_thread(worker_thread &&other)
-        : quit(other.quit), task_queue(other.task_queue),
-          db(other.db), worker(std::move(other.worker)) {}
+        : task_queue(other.task_queue), worker(std::move(other.worker)),
+          quit(other.quit), db(other.db) {}
 
 void worker_thread::start() {
     worker = thread([this] {
