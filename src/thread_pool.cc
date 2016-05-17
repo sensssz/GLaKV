@@ -16,6 +16,9 @@ thread_pool::thread_pool(DB &db, size_t pool_size) {
     for (size_t count = 0; count < pool_size; ++count) {
         workers.emplace_back(task_queue, db);
     }
+    for (auto &worker : workers) {
+        worker.start();
+    }
 }
 
 thread_pool::~thread_pool() {

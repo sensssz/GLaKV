@@ -13,46 +13,51 @@ using std::endl;
 using std::string;
 using std::chrono::microseconds;
 
-worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db)
-        : quit(false), worker([&queue, &db, this] {
-            task db_task;
-            while (!quit) {
-                if (!queue.try_dequeue(db_task)) {
-                    std::this_thread::sleep_for(microseconds(2));
-                    continue;
-                }
-                string val;
-                bool success = true;
-                auto start = std::chrono::high_resolution_clock::now();
-                switch (db_task.operation) {
-                    case get:
-                        success = db.get(db_task.key, val);
-                        break;
-                    case put:
-                        val = string(db_task.val, db_task.vlen);
-                        db.put(db_task.key, val);
-                        break;
-                    case del:
-                        db.del(db_task.key);
-                        break;
-                    case fetch:
-                        break;
-                    case noop:
-                        break;
-                    default:
-                        break;
-                }
-                if (db_task.operation != fetch ||
-                    db_task.operation != noop) {
-                    auto end = std::chrono::high_resolution_clock::now();
-                    auto diff = end - start;
-                    db_task.callback(success, val, diff.count());
-                }
-            }
-        }) {}
+worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in)
+        : quit(false), task_queue(queue), db(db_in) {}
 
 worker_thread::worker_thread(worker_thread &&other)
-        : quit(other.quit), worker(std::move(other.worker)) {}
+        : quit(other.quit), task_queue(other.task_queue),
+          db(other.db), worker(std::move(other.worker)) {}
+
+void worker_thread::start() {
+    worker = thread([this] {
+        task db_task;
+        while (!quit) {
+            if (!task_queue.try_dequeue(db_task)) {
+                std::this_thread::sleep_for(microseconds(2));
+                continue;
+            }
+            string val;
+            bool success = true;
+            auto start = std::chrono::high_resolution_clock::now();
+            switch (db_task.operation) {
+                case get:
+                    success = db.get(db_task.key, val);
+                    break;
+                case put:
+                    val = string(db_task.val, db_task.vlen);
+                    db.put(db_task.key, val);
+                    break;
+                case del:
+                    db.del(db_task.key);
+                    break;
+                case fetch:
+                    break;
+                case noop:
+                    break;
+                default:
+                    break;
+            }
+            if (db_task.operation != fetch ||
+                db_task.operation != noop) {
+                auto end = std::chrono::high_resolution_clock::now();
+                auto diff = end - start;
+                db_task.callback(success, val, diff.count());
+            }
+        }
+    });
+}
 
 void worker_thread::set_stop() {
     quit = true;
