@@ -14,7 +14,6 @@
 using std::ifstream;
 using std::ofstream;
 
-
 DB::DB(string &dir) : DB(dir, CACHE_SIZE) {}
 
 DB::DB(string &dir, uint64_t cache_size) : lru(cache_size) {
@@ -33,7 +32,8 @@ DB::~DB() {
 
 bool DB::get(uint32_t key, string &val) {
     ScalableCache::ConstAccessor accessor;
-    if (!lru.find(accessor, key)) {
+    String string_key((char *) (&key), sizeof(key) / sizeof (char));
+    if (!lru.find(accessor, string_key)) {
         unique_lock<shared_mutex> lock(mutex);
         uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
         lseek(db_file, offset, SEEK_SET);
@@ -42,7 +42,7 @@ bool DB::get(uint32_t key, string &val) {
         lock.unlock();
         if (buffer[0] == 1) {
             val = string(buffer + 1, VAL_LEN);
-            lru.insert(key, val);
+            lru.insert(string_key, val);
             return true;
         }
         return false;
@@ -52,7 +52,8 @@ bool DB::get(uint32_t key, string &val) {
 }
 
 void DB::put(uint32_t key, string &val) {
-    lru.insert(key, val);
+    String string_key((char *) (&key), sizeof(key) / sizeof (char));
+    lru.insert(string_key, val);
     char in_use = 0;
     char buffer[ENTRY_SIZE];
     buffer[0] = 1;      // Entry is in use
@@ -104,18 +105,3 @@ void DB::create_if_not_exists(string &dir) {
 uint32_t DB::size() {
     return db_size;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -30,7 +30,9 @@ using boost::shared_mutex;
 using boost::shared_lock;
 using boost::unique_lock;
 
-typedef tstarling::ThreadSafeScalableCache<uint32_t, string> ScalableCache;
+typedef tstarling::ThreadSafeStringKey String;
+typedef String::HashCompare HashCompare;
+typedef tstarling::ThreadSafeScalableCache<String, string, HashCompare> ScalableCache;
 
 class LRUCache {
 private:
