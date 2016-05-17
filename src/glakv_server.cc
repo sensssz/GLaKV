@@ -48,6 +48,7 @@ static int num_prefetch = NUM_PREFETCH;
 static vector<thread> threads;
 static atomic<int> num_threads(0);
 static bool reported = true;
+static double read_perc = 1;
 
 void quit_server(int) {
     cout << endl << "Receives CTRL-C, quiting..." << endl;
@@ -69,12 +70,14 @@ void usage(ostream &os) {
     os << "-d       directory to store the database files" << endl;
 }
 
-void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_exp) {
+void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_exp, double &cache_size) {
     struct option long_options[] = {
             {"help",    no_argument,       0, 'h'},
             {"prefetch",optional_argument, 0, 'p'},
             {"num",     required_argument, 0, 'n'},
             {"dir",     required_argument, 0, 'd'},
+            {"cache",   required_argument, 0, 'c'},
+            {"read",    required_argument, 0, 'r'},
             {0, 0, 0, 0}
     };
 
@@ -82,7 +85,7 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
     int option_index;
     help_flag = 0;
     dir = "glakv_home";
-    while ((c = getopt_long(argc, argv, "hn:p:d:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hn:p:d:c:r:", long_options, &option_index)) != -1) {
         switch(c) {
             case 'h':
                 help_flag = 1;
@@ -98,6 +101,12 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
                 break;
             case 'd':
                 dir = optarg;
+                break;
+            case 'c':
+                cache_size = atof(optarg) / 100;
+                break;
+            case 'r':
+                read_perc = atof(optarg) / 100;
                 break;
             case '?':
                 break;
@@ -231,7 +240,8 @@ int main(int argc, char *argv[])
     int help_flag = 0;
     string dir;
     int num_exp = 0;
-    parse_opts(argc, argv, help_flag, dir, num_exp);
+    double cache_size = CACHE_SIZE / 100;
+    parse_opts(argc, argv, help_flag, dir, num_exp, cache_size);
 
     if (help_flag) {
         usage(cout);
@@ -248,7 +258,7 @@ int main(int argc, char *argv[])
     int flags = fcntl(sockfd, F_GETFL, 0);
     fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
     vector<double> latencies;
-    thread_pool pool(db);
+    thread_pool pool(db, (uint32_t) (cache_size * db.size()));
     mutex lock;
     int count = 0;
     while (!quit) {
