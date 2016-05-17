@@ -9,7 +9,7 @@ OBJS = DB.o glakv_client.o glakv_server.o exponential_distribution.o worker_thre
 all: exec
 
 debug: CXXFLAGS += -pg
-debug: LDGLAGS += -pg
+debug: LDFLAGS += -pg
 debug: exec
 
 test: exp_dist_test
