@@ -12,14 +12,16 @@ using std::endl;
 thread_pool::thread_pool(DB &db) : thread_pool(db, 5) {
 }
 
-thread_pool::thread_pool(DB &db, size_t pool_size) : quit(false) {
+thread_pool::thread_pool(DB &db, size_t pool_size) {
     for (size_t count = 0; count < pool_size; ++count) {
-        workers.emplace_back(task_queue, quit, db);
+        workers.emplace_back(task_queue, db);
     }
 }
 
 thread_pool::~thread_pool() {
-    quit = true;
+    for (auto &worker : workers) {
+        worker.set_stop();
+    }
     for (auto &worker : workers) {
         worker.join();
     }

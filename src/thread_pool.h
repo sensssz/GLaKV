@@ -22,7 +22,6 @@ class thread_pool {
 private:
     ConcurrentQueue<task> task_queue;
     vector<worker_thread> workers;
-    bool quit;
 public:
     thread_pool(DB &db);
     thread_pool(DB &db, size_t pool_size);
