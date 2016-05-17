@@ -18,9 +18,9 @@ trap 'quit=1' INT
 ssh salat3 "mkdir -p ${output_path}/"
 ssh salat3 "rm ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 
-for p in `seq 0 5`;
+for((c=1;c<=64;c*=2));
 do
-    for((c=1;c<=32;c*=2))
+    for p in `seq 0 3`;
     do
         if [[ ! -z ${quit+x} ]]; then
             exit 0
