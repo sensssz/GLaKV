@@ -31,12 +31,12 @@ DB::~DB() {
 
 bool DB::get(uint32_t key, string &val) {
     if (!cache.get(key, val)) {
-        shared_lock<shared_mutex> read_lock(mutex);
+        unique_lock<shared_mutex> lock(mutex);
         uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
         lseek(db_file, offset, SEEK_SET);
         char buffer[ENTRY_SIZE];
         read(db_file, buffer, ENTRY_SIZE);
-        read_lock.unlock();
+        lock.unlock();
         if (buffer[0] == 1) {
             val = string(buffer + 1, VAL_LEN);
             cache.put(key, val);

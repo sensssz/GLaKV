@@ -17,7 +17,7 @@
 #include <boost/thread/shared_mutex.hpp>
 
 
-#define CACHE_SIZE (DB_SIZE / 100)
+#define CACHE_SIZE (DB_SIZE / 50)
 
 using std::fstream;
 using std::list;
