@@ -41,7 +41,7 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                     default:
                         break;
                 }
-                if (db_task.operation != prefetch ||
+                if (db_task.operation != fetch ||
                     db_task.operation != noop) {
                     auto end = std::chrono::high_resolution_clock::now();
                     auto diff = end - db_task.birth_time;
