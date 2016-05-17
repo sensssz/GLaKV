@@ -30,7 +30,7 @@ using boost::shared_mutex;
 using boost::shared_lock;
 using boost::unique_lock;
 
-using tstarling::ThreadSafeScalableCache;
+typedef tstarling::ThreadSafeScalableCache<uint32_t, string> ScalableCache;
 
 class LRUCache {
 private:
@@ -93,7 +93,7 @@ private:
     shared_mutex mutex;
     int          db_file;
     uint32_t     db_size;
-    ThreadSafeScalableCache<uint32_t, string> lru;
+    ScalableCache lru;
 
     DB(const DB&) = delete;
     void create_if_not_exists(string &dir);

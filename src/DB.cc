@@ -13,7 +13,7 @@
 
 using std::ifstream;
 using std::ofstream;
-using tstarling::ThreadSafeScalableCache::ConstAccessor;
+
 
 DB::DB(string &dir) : DB(dir, CACHE_SIZE) {}
 
@@ -32,7 +32,7 @@ DB::~DB() {
 }
 
 bool DB::get(uint32_t key, string &val) {
-    ConstAccessor<string> accessor;
+    ScalableCache::ConstAccessor<string> accessor;
     if (!lru.find(accessor, key)) {
         unique_lock<shared_mutex> lock(mutex);
         uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
