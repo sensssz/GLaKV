@@ -13,7 +13,7 @@
 using std::function;
 using std::string;
 
-enum opcode {get, put, del, noop};
+enum opcode {get, put, del, fetch, noop};
 
 struct task {
     opcode      operation;

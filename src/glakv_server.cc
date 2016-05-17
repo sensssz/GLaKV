@@ -145,18 +145,12 @@ uint64_t get_uint64(char *buf) {
     return *((uint64_t *) buf);
 }
 
-void prefetch_kv(DB &db, uint32_t key) {
-    string val;
-    db.get(key, val);
-}
-
-void prefetch_for_key(DB &db, uint32_t key) {
+void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key) {
     if (prefetch) {
         uint32_t original_key = key;
         for (int count = 0; count < num_prefetch; ++count) {
             key = (original_key + count + db.size() / 3) % db.size();
-            thread t(prefetch_kv, std::ref(db), key);
-            t.detach();
+            pool.submit_task({fetch, key, [] (bool, string &, double) {}});
         }
     }
 }
@@ -185,7 +179,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                     store_uint64(res + 1, val.size());
                     memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
                     res_len = 1 + INT_LEN + val.size();
-                    prefetch_for_key(db, key);
+                    prefetch_for_key(db, pool, key);
                 } else {
                     res[0] = 0;
                     res_len = 1;

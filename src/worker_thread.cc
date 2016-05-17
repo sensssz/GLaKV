@@ -34,14 +34,19 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                     case del:
                         db.del(db_task.key);
                         break;
+                    case fetch:
+                        break;
                     case noop:
                         break;
                     default:
                         break;
                 }
-                auto end = std::chrono::high_resolution_clock::now();
-                auto diff = end - db_task.birth_time;
-                db_task.callback(success, val, diff.count());
+                if (db_task.operation != prefetch ||
+                    db_task.operation != noop) {
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto diff = end - db_task.birth_time;
+                    db_task.callback(success, val, diff.count());
+                }
             }
         }) {}
 
