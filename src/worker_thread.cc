@@ -23,6 +23,7 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                 }
                 string val;
                 bool success = true;
+                auto start = std::chrono::high_resolution_clock::now();
                 switch (db_task.operation) {
                     case get:
                         success = db.get(db_task.key, val);
@@ -43,9 +44,9 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                 }
                 if (db_task.operation != fetch ||
                     db_task.operation != noop) {
-//                    auto end = std::chrono::high_resolution_clock::now();
-//                    auto diff = end - db_task.birth_time;
-//                    db_task.callback(success, val, diff.count());
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto diff = end - start;
+                    db_task.callback(success, val, diff.count());
                 }
             }
         }) {}
