@@ -93,7 +93,7 @@ string send_get(int sockfd, uint32_t key) {
     memcpy(cmd_buf, GET, GET_LEN);
     store_uint32(cmd_buf + GET_LEN, key);
     size_t len = GET_LEN + KEY_LEN;
-    if (write(sockfd, cmd_buf, len) != len) {
+    if (write(sockfd, cmd_buf, len) != (ssize_t) len) {
         error("ERROR sending command");
     }
     if (read(sockfd, res_buf, BUF_LEN) < 0) {
@@ -114,7 +114,7 @@ void send_put(int sockfd, uint32_t key, const char *val_buf, uint64_t vlen) {
     store_uint64(cmd_buf + PUT_LEN + KEY_LEN, vlen);
     memcpy(cmd_buf + PUT_LEN + KEY_LEN + INT_LEN, val_buf, vlen);
     size_t len = PUT_LEN + KEY_LEN + INT_LEN + vlen;
-    if (write(sockfd, cmd_buf, len) != len) {
+    if (write(sockfd, cmd_buf, len) != (ssize_t) len) {
         error("ERROR sending command");
     }
     if (read(sockfd, res_buf, BUF_LEN) < 0) {
