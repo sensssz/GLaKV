@@ -6,7 +6,7 @@ salat3=salat3.eecs.umich.edu
 db_path=/home/jiamin/speculative/GLaKV/src
 output_path=/home/jiamin/speculative/out
 
-num_exp=10000
+num_exp=2000
 exp_name="diff_c_p"
 
 if [[ $# -eq 1 ]]; then
@@ -18,9 +18,9 @@ trap 'quit=1' INT
 ssh salat3 "mkdir -p ${output_path}/"
 ssh salat3 "rm ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 
-for((c=1;c<=64;c*=2));
+for((c=1;c<=256;c*=2));
 do
-    for p in `seq 0 3`;
+    for p in `seq 0 5`;
     do
         if [[ ! -z ${quit+x} ]]; then
             exit 0
