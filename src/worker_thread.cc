@@ -43,9 +43,9 @@ worker_thread::worker_thread(ConcurrentQueue<task> &queue, bool &quit_in, DB &db
                 }
                 if (db_task.operation != fetch ||
                     db_task.operation != noop) {
-                    auto end = std::chrono::high_resolution_clock::now();
-                    auto diff = end - db_task.birth_time;
-                    db_task.callback(success, val, diff.count());
+//                    auto end = std::chrono::high_resolution_clock::now();
+//                    auto diff = end - db_task.birth_time;
+//                    db_task.callback(success, val, diff.count());
                 }
             }
         }) {}
