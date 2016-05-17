@@ -6,7 +6,6 @@
 #define GLAKV_DB_H
 
 #include "config.h"
-#include "thread-safe-lru/scalable-cache.h"
 
 #include <fstream>
 #include <list>

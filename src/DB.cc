@@ -3,7 +3,6 @@
 //
 
 #include "DB.h"
-#include "thread-safe-lru/scalable-cache.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
