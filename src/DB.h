@@ -6,6 +6,7 @@
 #define GLAKV_DB_H
 
 #include "config.h"
+#include "thread-safe-lru/scalable-cache.h"
 
 #include <fstream>
 #include <list>
@@ -28,6 +29,8 @@ using std::unordered_map;
 using boost::shared_mutex;
 using boost::shared_lock;
 using boost::unique_lock;
+
+using tstarling::ThreadSafeScalableCache;
 
 class LRUCache {
 private:
@@ -89,8 +92,8 @@ class DB {
 private:
     shared_mutex mutex;
     int          db_file;
-    LRUCache     cache;
     uint32_t     db_size;
+    ThreadSafeScalableCache<uint32_t, string> lru;
 
     DB(const DB&) = delete;
     void create_if_not_exists(string &dir);

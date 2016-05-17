@@ -3,6 +3,7 @@
 //
 
 #include "DB.h"
+#include "thread-safe-lru/scalable-cache.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -12,10 +13,11 @@
 
 using std::ifstream;
 using std::ofstream;
+using tstarling::ThreadSafeScalableCache::ConstAccessor;
 
 DB::DB(string &dir) : DB(dir, CACHE_SIZE) {}
 
-DB::DB(string &dir, uint64_t cache_size) : cache(cache_size) {
+DB::DB(string &dir, uint64_t cache_size) : lru(cache_size) {
     if (dir[dir.size() - 1] != '/') {
         dir += '/';
     }
@@ -30,7 +32,8 @@ DB::~DB() {
 }
 
 bool DB::get(uint32_t key, string &val) {
-    if (!cache.get(key, val)) {
+    ConstAccessor<string> accessor;
+    if (!lru.find(accessor, key)) {
         unique_lock<shared_mutex> lock(mutex);
         uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
         lseek(db_file, offset, SEEK_SET);
@@ -39,17 +42,17 @@ bool DB::get(uint32_t key, string &val) {
         lock.unlock();
         if (buffer[0] == 1) {
             val = string(buffer + 1, VAL_LEN);
-            cache.put(key, val);
+            lru.insert(key, val);
             return true;
         }
         return false;
     }
+    val = *accessor;
     return true;
 }
 
 void DB::put(uint32_t key, string &val) {
-    cache.put(key, val);
-
+    lru.insert(key, val);
     char in_use = 0;
     char buffer[ENTRY_SIZE];
     buffer[0] = 1;      // Entry is in use
@@ -74,7 +77,6 @@ void DB::put(uint32_t key, string &val) {
 }
 
 void DB::del(uint32_t key) {
-    cache.del(key);
     unique_lock<shared_mutex> lock(mutex);
     uint64_t offset = sizeof(uint32_t) + key * ENTRY_SIZE;
     lseek(db_file, offset, SEEK_SET);
