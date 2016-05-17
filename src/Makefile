@@ -2,10 +2,13 @@ CUSTOM_USR = /home/jiamin/usr
 INCLUDE = -I$(CUSTOM_USR)/include
 LIBS = -lboost_thread
 LDFLAGS = -pg -L$(CUSTOM_USR)/lib $(LIBS)
-CXXFLAGS = -Wall -Werror -std=c++11 -c -pg $(INCLUDE)
+CXXFLAGS = -Wall -Werror -std=c++11 -c -O3 $(INCLUDE)
 OBJS = DB.o glakv_client.o glakv_server.o exponential_distribution.o worker_thread.o thread_pool.o
 
 all: exec
+
+debug: CXXFLAGS += -pg
+debug: exec
 
 test: exp_dist_test
 
