@@ -184,7 +184,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                     res[0] = 0;
                     res_len = 1;
                 }
-                if (write(sockfd, res, res_len) != res_len) {
+                if (write(sockfd, res, res_len) != (ssize_t) res_len) {
                     cerr << "Error sending result to client" << endl;
                     return;
                 }
