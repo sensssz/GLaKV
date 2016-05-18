@@ -1,4 +1,4 @@
-#include "DB.h"
+#include "DBImpl.h"
 #include "config.h"
 #include "exponential_distribution.h"
 #include "thread_pool.h"
@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    DB db(dir);
+    DBImpl db(dir);
     int sockfd = setup_server();
     int newsockfd;
     socklen_t clilen;

@@ -20,17 +20,34 @@ int main(int argc, char *argv[]) {
     if (argc == 2) {
         lambda = atof(argv[1]);
     }
-    unordered_map<uint64_t, uint64_t> map;
-    exponential_distribution distribution(lambda, 100);
+//    unordered_map<uint64_t, uint64_t> map;
+//    exponential_distribution distribution(lambda, 100);
+//
+//    for (uint64_t count = 0; count < 10000; ++count) {
+//        uint64_t val = distribution.next();
+//        map[val]++;
+//    }
+//
+//    for (int count = 0; count < 100; ++count) {
+//        string val(map[count] / 100, '*');
+//        cout << count << ": " << val << endl;
+//    }
 
-    for (uint64_t count = 0; count < 10000; ++count) {
-        uint64_t val = distribution.next();
-        map[val]++;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    // if particles decay once per second on average,
+    // how much time, in seconds, until the next one?
+    std::exponential_distribution<> d(0);
+
+    std::map<int, int> hist;
+    for(int n=0; n<10000; ++n) {
+        ++hist[2*d(gen)];
     }
-
-    for (int count = 0; count < 100; ++count) {
-        string val(map[count] / 100, '*');
-        cout << count << ": " << val << endl;
+    for(auto p : hist) {
+        std::cout << std::fixed << std::setprecision(1)
+        << p.first/2.0 << '-' << (p.first+1)/2.0 <<
+        ' ' << std::string(p.second/200, '*') << '\n';
     }
 
     return 0;
