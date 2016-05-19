@@ -27,7 +27,7 @@ fakeDB::fakeDB(string dir) {
 bool fakeDB::get(uint32_t key, string &val) {
     if (!cache.get(key, val)) {
         unique_lock<shared_mutex> lock(mutex);
-        std::this_thread::sleep_for(GET_TIME);
+        std::this_thread::sleep_for(microseconds(GET_TIME));
         lock.unlock();
         char buffer[VAL_LEN];
         val = string(buffer + 1, VAL_LEN);
@@ -39,13 +39,13 @@ bool fakeDB::get(uint32_t key, string &val) {
 void fakeDB::put(uint32_t key, string &val) {
     cache.put(key, val);
     unique_lock<shared_mutex> lock(mutex);
-    std::this_thread::sleep_for(PUT_TIME);
+    std::this_thread::sleep_for(microseconds(PUT_TIME));
 }
 
 void fakeDB::del(uint32_t key) {
     cache.del(key);
     unique_lock<shared_mutex> lock(mutex);
-    std::this_thread::sleep_for(DEL_TIME);
+    std::this_thread::sleep_for(microseconds(DEL_TIME));
 }
 
 uint32_t fakeDB::size() {
