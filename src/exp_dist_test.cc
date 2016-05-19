@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     uint32_t size = 1000;
     uint32_t total = 100000;
     map<uint64_t, uint64_t> hist;
-    exponential_distribution distribution(lambda, 1000);
+    exponential_distribution distribution(lambda, 100);
 
     for (uint64_t count = 0; count < 100000; ++count) {
         uint64_t val = distribution.next();
