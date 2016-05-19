@@ -18,7 +18,7 @@ trap 'quit=1' INT
 ssh salat3 "mkdir -p ${output_path}/"
 ssh salat3 "rm ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 
-for m in {0.15, 0.2, 0.25};
+for m in 0.15 0.2 0.25;
 do
     for((c=64;c<=256;c*=2));
     do
