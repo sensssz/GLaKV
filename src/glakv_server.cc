@@ -2,6 +2,7 @@
 #include "config.h"
 #include "exponential_distribution.h"
 #include "thread_pool.h"
+#include "fakeDB.h"
 
 #include <getopt.h>
 #include <unistd.h>
@@ -10,6 +11,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #include <atomic>
 #include <iostream>
@@ -17,7 +19,7 @@
 #include <mutex>
 #include <chrono>
 #include <future>
-#include <fcntl.h>
+#include <unordered_map>
 
 #define BUF_LEN     (VAL_LEN * 2)
 #define GET         "Get"
@@ -41,6 +43,7 @@ using std::thread;
 using std::chrono::time_point;
 using std::uniform_int_distribution;
 using std::vector;
+using std::unordered_map;
 
 static bool quit = false;
 static bool prefetch = false;
@@ -154,17 +157,30 @@ uint64_t get_uint64(char *buf) {
     return *((uint64_t *) buf);
 }
 
-void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key) {
+void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uint32_t, string> &prefetch_cache) {
     if (prefetch) {
         uint32_t original_key = key;
         for (int count = 0; count < num_prefetch; ++count) {
             key = (original_key + count + db.size() / 3) % db.size();
-            pool.submit_task({fetch, key, [] (bool, string &, double) {}});
+            pool.submit_task({fetch, key, [&prefetch_cache, &count] (bool success, string &val, double) {
+                prefetch_cache[count] = val;
+            }});
         }
     }
 }
 
+bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetch_cache, string &val) {
+    auto iter = prefetch_cache.find(key);
+    if (iter == prefetch_cache.end()) {
+        return false;
+    }
+    val = iter->second;
+    prefetch_cache.clear();
+    return true;
+}
+
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
+    unordered_map<uint32_t, string> prefetch_cache((unsigned long) (2 * num_prefetch));
     reported = false;
     char buffer[BUF_LEN];
     uint32_t key;
@@ -180,6 +196,15 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
+            string val;
+            if (check_prefetch_cache(key, prefetch_cache, val)) {
+                write(sockfd, val.data(), val.length());
+                lock.lock();
+                latencies.push_back(0);
+                lock.unlock();
+                prefetch_for_key(db, pool, key, prefetch_cache);
+                continue;
+            }
             pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock, &pool] (bool success, string &val, double time) {
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
@@ -188,7 +213,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                     store_uint64(res + 1, val.size());
                     memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
                     res_len = 1 + INT_LEN + val.size();
-                    prefetch_for_key(db, pool, key);
+                    prefetch_for_key(db, pool, key, prefetch_cache);
                 } else {
                     res[0] = 0;
                     res_len = 1;
@@ -248,7 +273,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    DBImpl db(dir);
+    fakeDB db(dir);
     int sockfd = setup_server();
     int newsockfd;
     socklen_t clilen;

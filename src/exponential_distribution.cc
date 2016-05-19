@@ -24,11 +24,13 @@ exponential_distribution::exponential_distribution(double lambda_in, uint32_t si
 
 uint32_t exponential_distribution::next() {
     uint32_t key = 0;
-    double rand;
-    do {
-        rand = dist(generator);
-        key = (uint32_t) (rand / interval_size);
-    } while (rand > max_val);
+    if (lambda > 0) {
+        double rand;
+        do {
+            rand = dist(generator);
+            key = (uint32_t) (rand / interval_size);
+        } while (rand > max_val);
+    }
     return key;
 }
 

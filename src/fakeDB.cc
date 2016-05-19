@@ -2,7 +2,12 @@
 // Created by Jiamin Huang on 5/17/16.
 //
 
+#include "config.h"
 #include "fakeDB.h"
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <fcntl.h>
 
 #include <chrono>
 #include <thread>
@@ -13,19 +18,36 @@ const int GET_TIME = 300;
 const int PUT_TIME = 900;
 const int DEL_TIME = 600;
 
+fakeDB::fakeDB(string dir) {
+    int db_file = open(dir.c_str(), O_RDWR);
+    read(db_file, &(fakeDB::db_size), sizeof(uint32_t));
+    close(db_file);
+}
+
 bool fakeDB::get(uint32_t key, string &val) {
-    std::this_thread::sleep_for(GET_TIME);
-    return false;
+    if (!cache.get(key, val)) {
+        unique_lock<shared_mutex> lock(mutex);
+        std::this_thread::sleep_for(GET_TIME);
+        lock.unlock();
+        char buffer[VAL_LEN];
+        val = string(buffer + 1, VAL_LEN);
+        cache.put(key, val);
+    }
+    return true;
 }
 
 void fakeDB::put(uint32_t key, string &val) {
+    cache.put(key, val);
+    unique_lock<shared_mutex> lock(mutex);
     std::this_thread::sleep_for(PUT_TIME);
 }
 
 void fakeDB::del(uint32_t key) {
+    cache.del(key);
+    unique_lock<shared_mutex> lock(mutex);
     std::this_thread::sleep_for(DEL_TIME);
 }
 
 uint32_t fakeDB::size() {
-    return 0;
+    return db_size;
 }

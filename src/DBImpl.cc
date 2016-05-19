@@ -39,6 +39,7 @@ bool DBImpl::get(uint32_t key, string &val) {
         lock.unlock();
         if (buffer[0] == 1) {
             val = string(buffer + 1, VAL_LEN);
+            cache.put(key, val);
             return true;
         }
         return false;
