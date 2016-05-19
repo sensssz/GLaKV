@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         lambda = atof(argv[1]);
     }
     map<uint64_t, uint64_t> hist;
-    exponential_distribution distribution(lambda, 100);
+    exponential_distribution distribution(lambda, DB_SIZE);
 
     for (uint64_t count = 0; count < 100000; ++count) {
         uint64_t val = distribution.next();
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
     }
 
     for (auto iter : hist) {
-        if (iter.second / 1000 > 0) {
-            string val(iter.second / 100, '*');
+        if (iter.second > 0) {
+            string val(iter.second, '*');
             cout << iter.first << ": " << val << endl;
         }
     }
