@@ -21,12 +21,12 @@ int main(int argc, char *argv[]) {
     if (argc == 2) {
         lambda = atof(argv[1]);
     }
-    uint32_t size = 1000;
+    uint32_t size = DB_SIZE / 1000;
     uint32_t total = 100000;
     map<uint64_t, uint64_t> hist;
-    exponential_distribution distribution(lambda, 100);
+    exponential_distribution distribution(lambda, size);
 
-    for (uint64_t count = 0; count < 100000; ++count) {
+    for (uint64_t count = 0; count < total; ++count) {
         uint64_t val = distribution.next();
         hist[val]++;
     }
