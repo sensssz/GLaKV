@@ -39,7 +39,7 @@ using std::thread;
 using std::uniform_int_distribution;
 using std::vector;
 
-static int lambda = 1;
+static double lambda = 1;
 
 void error(const char *msg)
 {
@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
                 num_clients = atoi(optarg);
                 break;
             case 'm':
-                lambda = atoi(optarg);
+                lambda = atof(optarg);
             case 'n':
                 num_exps = atoi(optarg);
                 break;
