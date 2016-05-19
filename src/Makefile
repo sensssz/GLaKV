@@ -4,7 +4,9 @@ INCLUDE = -I$(CUSTOM_USR)/include -I$(SRC)
 LIBS = -lboost_thread
 LDFLAGS = -L$(CUSTOM_USR)/lib $(LIBS)
 CXXFLAGS = -Wall -Werror -std=c++11 -c -O3 $(INCLUDE)
-OBJS = DBImpl.o glakv_client.o glakv_server.o exponential_distribution.o worker_thread.o thread_pool.o
+SERVEROBJS = DBImpl.o fakeDB.o lrucache.o worker_thread.o thread_pool.o glakv_server.o
+CLIENTOBJS = glakv_client.o exponential_distribution.o
+OBJS = $(SERVEROBJS) $(CLIENTOBJS)
 
 all: exec
 
@@ -15,8 +17,8 @@ debug: exec
 test: exp_dist_test
 
 exec: $(OBJS)
-	$(CC) $(LDFLAGS) DBImpl.o glakv_server.o worker_thread.o thread_pool.o -o glakv_server
-	$(CC) $(LDFLAGS) DBImpl.o glakv_client.o exponential_distribution.o -o glakv_client
+	$(CC) $(LDFLAGS) $(SERVEROBJS) -o glakv_server
+	$(CC) $(LDFLAGS) $(CLIENTOBJS)-o glakv_client
 
 glakv_client.o: glakv_client.cc config.h
 	$(CC) $(CXXFLAGS) glakv_client.cc -o glakv_client.o
@@ -26,6 +28,15 @@ glakv_server.o: glakv_server.cc config.h
 
 exponential_distribution.o: exponential_distribution.cc exponential_distribution.h
 	$(CC) $(CXXFLAGS) exponential_distribution.cc -o exponential_distribution.o
+
+DBImpl.o: DBImpl.cc DBImpl.h config.h
+	$(CC) $(CXXFLAGS) DBImpl.cc -o DBImpl.o
+
+fakeDB.o: fakeDB.cc fakeDB.h config.h
+	$(CC) $(CXXFLAGS) fakeDB.cc -o fakeDB.o
+
+lrucache.o: lrucache.cc lrucache.h config.h
+	$(CC) $(CXXFLAGS) lrucache.cc -o lrucache.o
 
 DBImpl.o: DBImpl.cc DBImpl.h config.h
 	$(CC) $(CXXFLAGS) DBImpl.cc -o DBImpl.o
