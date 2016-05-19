@@ -205,7 +205,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 prefetch_for_key(db, pool, key, prefetch_cache);
                 continue;
             }
-            pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock, &pool] (bool success, string &val, double time) {
+            pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock, &pool, &prefetch_cache] (bool success, string &val, double time) {
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
                 if (success) {
