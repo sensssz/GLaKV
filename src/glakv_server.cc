@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
     signal(SIGINT, quit_server);
 
     int help_flag = 0;
-    string dir;
+    string dir = "glakv_home";
     int num_exp = 0;
     double cache_size = CACHE_SIZE / 100;
     parse_opts(argc, argv, help_flag, dir, num_exp, cache_size);

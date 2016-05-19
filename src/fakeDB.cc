@@ -19,7 +19,11 @@ const int PUT_TIME = 40000;
 const int DEL_TIME = 30000;
 
 fakeDB::fakeDB(string dir) {
-    int db_file = open(dir.c_str(), O_RDWR);
+    if (dir[dir.size() - 1] != '/') {
+        dir += '/';
+    }
+    int db_file = open(dir.c_str(), O_RDONLY);
+    assert(db_file > 0);
     read(db_file, &(fakeDB::db_size), sizeof(uint32_t));
     close(db_file);
 }
