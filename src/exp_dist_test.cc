@@ -22,9 +22,9 @@ int main(int argc, char *argv[]) {
         lambda = atof(argv[1]);
     }
     uint32_t size = DB_SIZE / 1000;
-    uint32_t total = 1000;
+    uint32_t total = 2000;
     map<uint64_t, uint64_t> hist;
-    exponential_distribution distribution(lambda, size);
+    exponential_distribution distribution(lambda, 1000);
 
     for (uint64_t count = 0; count < total; ++count) {
         uint64_t val = distribution.next();
