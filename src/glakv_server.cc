@@ -317,6 +317,7 @@ int main(int argc, char *argv[])
                 error("ERROR on accept");
             }
         }
+        cout << "Connection established" << endl;
         flags = fcntl(newsockfd, F_GETFL, 0);
         fcntl(newsockfd, F_SETFL, flags & ~O_NONBLOCK);
         thread t(serve_client, newsockfd, std::ref(pool), std::ref(db), std::ref(latencies), std::ref(lock));

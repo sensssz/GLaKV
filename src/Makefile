@@ -10,9 +10,13 @@ OBJS = $(SERVEROBJS) $(CLIENTOBJS)
 
 all: exec
 
-debug: CXXFLAGS += -pg
-debug: LDFLAGS += -pg
+debug: CXXFLAGS += -g
+debug: LDFLAGS += -g
 debug: exec
+
+profile: CXXFLAGS += -pg
+profile: LDFLAGS += -pg
+profile: exec
 
 test: exp_dist_test
 
