@@ -181,7 +181,7 @@ void execute(uint32_t database_size, int num_exps) {
     }
     send_quit(sockfd);
     close(sockfd);
-    cout << "zero rate: " << zero / total << endl;
+//    cout << "zero rate: " << zero / total << endl;
 }
 
 void run(int num_threads, uint32_t database_size, int num_exps) {
