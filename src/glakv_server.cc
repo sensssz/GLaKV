@@ -172,6 +172,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uin
 bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetch_cache, string &val) {
     auto iter = prefetch_cache.find(key);
     if (iter == prefetch_cache.end()) {
+        prefetch_cache.clear();
         return false;
     }
     val = iter->second;
@@ -180,7 +181,7 @@ bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetc
 }
 
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
-    unordered_map<uint32_t, string> prefetch_cache((unsigned long) (2 * num_prefetch));
+    unordered_map<uint32_t, string> prefetch_cache;
     reported = false;
     char buffer[BUF_LEN];
     uint32_t key;
@@ -196,9 +197,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
-            string val;
-            if (check_prefetch_cache(key, prefetch_cache, val)) {
-                write(sockfd, val.data(), val.length());
+            string value;
+            if (check_prefetch_cache(key, prefetch_cache, value)) {
+                write(sockfd, value.data(), value.length());
                 lock.lock();
                 latencies.push_back(0);
                 lock.unlock();

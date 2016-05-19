@@ -14,9 +14,9 @@
 
 using std::chrono::microseconds;
 
-const int GET_TIME = 300;
-const int PUT_TIME = 900;
-const int DEL_TIME = 600;
+const int GET_TIME = 20000;
+const int PUT_TIME = 40000;
+const int DEL_TIME = 30000;
 
 fakeDB::fakeDB(string dir) {
     int db_file = open(dir.c_str(), O_RDWR);
