@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         lambda = atof(argv[1]);
     }
     unordered_map<uint64_t, uint64_t> map;
-    exponential_distribution distribution(lambda, DB_SIZE);
+    exponential_distribution distribution(lambda, 100);
 
     for (uint64_t count = 0; count < 100000; ++count) {
         uint64_t val = distribution.next();
