@@ -29,9 +29,9 @@ int main(int argc, char *argv[]) {
         map[val]++;
     }
 
-    for (int count = 0; count < 100; ++count) {
-        string val(map[count] / 100, '*');
-        cout << count << ": " << val << endl;
+    for (auto iter : map) {
+        string val(map[iter.second] / 100, '*');
+        cout << iter.first << ": " << val << endl;
     }
 
     return 0;
