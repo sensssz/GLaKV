@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         lambda = atof(argv[1]);
     }
     uint32_t size = DB_SIZE / 1000;
-    uint32_t total = 100000;
+    uint32_t total = 1000;
     map<uint64_t, uint64_t> hist;
     exponential_distribution distribution(lambda, size);
 
