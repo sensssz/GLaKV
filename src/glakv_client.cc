@@ -164,7 +164,7 @@ void execute(uint32_t database_size, int num_exps) {
     std::random_device rd;
     std::mt19937 generator(rd());
     std::uniform_int_distribution<uint32_t> uni_dist(0, database_size - 1);
-    exponential_distribution exp_dist(lambda, database_size);
+    exponential_distribution exp_dist(lambda, database_size / 1000);
     uint32_t key = uni_dist(generator);
     for (int count = 0; count < num_exps; ++count) {
         send_get(sockfd, key);
