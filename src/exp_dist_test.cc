@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     map<uint64_t, uint64_t> hist;
     exponential_distribution distribution(lambda, DB_SIZE);
 
-    for (uint64_t count = 0; count < 100000; ++count) {
+    for (uint64_t count = 0; count < 1000; ++count) {
         uint64_t val = distribution.next();
         hist[val]++;
     }
