@@ -14,9 +14,9 @@
 
 using std::chrono::microseconds;
 
-const int GET_TIME = 20000;
-const int PUT_TIME = 40000;
-const int DEL_TIME = 30000;
+const int GET_TIME = 2000;
+const int PUT_TIME = 4000;
+const int DEL_TIME = 3000;
 
 fakeDB::fakeDB(string dir) {
     if (dir[dir.size() - 1] != '/') {
