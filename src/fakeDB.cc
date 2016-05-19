@@ -14,11 +14,12 @@
 
 using std::chrono::microseconds;
 
+const int CONTENTION = 100;
 const int GET_TIME = 2000;
 const int PUT_TIME = 4000;
 const int DEL_TIME = 3000;
 
-fakeDB::fakeDB(string dir) {
+fakeDB::fakeDB(string dir, uint32_t num_prefetch_in) : num_prefetch(num_prefetch_in) {
     if (dir[dir.size() - 1] != '/') {
         dir += '/';
     }
@@ -29,14 +30,7 @@ fakeDB::fakeDB(string dir) {
 }
 
 bool fakeDB::get(uint32_t key, string &val) {
-    if (!cache.get(key, val)) {
-        unique_lock<shared_mutex> lock(mutex);
-        std::this_thread::sleep_for(microseconds(GET_TIME));
-        lock.unlock();
-        char buffer[VAL_LEN];
-        val = string(buffer + 1, VAL_LEN);
-        cache.put(key, val);
-    }
+    std::this_thread::sleep_for(microseconds(GET_TIME + num_prefetch * CONTENTION));
     return true;
 }
 

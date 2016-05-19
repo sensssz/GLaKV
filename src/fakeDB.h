@@ -17,8 +17,9 @@ private:
     shared_mutex mutex;
     uint32_t db_size;
     LRUCache cache;
+    uint32_t num_prefetch;
 public:
-    fakeDB(string dir);
+    fakeDB(string dir, uint32_t num_prefetch);
     virtual bool get(uint32_t key, string &val);
     virtual void put(uint32_t key, string &val);
     virtual void del(uint32_t key);
