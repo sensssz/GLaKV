@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
     int flags = fcntl(sockfd, F_GETFL, 0);
     fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
     vector<double> latencies;
-    thread_pool pool(db, (uint32_t) (cache_size * db.size()));
+    thread_pool pool(db);
     mutex lock;
     int count = 0;
     while (!quit) {
