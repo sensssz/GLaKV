@@ -14,6 +14,8 @@
 #include <netdb.h>
 #include <signal.h>
 
+#include <cassert>
+#include <cstring>
 #include <iostream>
 #include <thread>
 
