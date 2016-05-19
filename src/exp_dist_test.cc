@@ -21,17 +21,20 @@ int main(int argc, char *argv[]) {
     if (argc == 2) {
         lambda = atof(argv[1]);
     }
+    uint32_t size = 1000;
+    uint32_t total = 100000;
     map<uint64_t, uint64_t> hist;
-    exponential_distribution distribution(lambda, DB_SIZE);
+    exponential_distribution distribution(lambda, 1000);
 
-    for (uint64_t count = 0; count < 1000; ++count) {
+    for (uint64_t count = 0; count < 100000; ++count) {
         uint64_t val = distribution.next();
         hist[val]++;
     }
 
+    int scale = total / size;
     for (auto iter : hist) {
-        if (iter.second > 0) {
-            string val(iter.second, '*');
+        if (iter.second / scale > 0) {
+            string val(iter.second / scale, '*');
             cout << iter.first << ": " << val << endl;
         }
     }
