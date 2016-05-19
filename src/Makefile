@@ -38,9 +38,6 @@ fakeDB.o: fakeDB.cc fakeDB.h config.h
 lrucache.o: lrucache.cc lrucache.h config.h
 	$(CC) $(CXXFLAGS) lrucache.cc -o lrucache.o
 
-DBImpl.o: DBImpl.cc DBImpl.h config.h
-	$(CC) $(CXXFLAGS) DBImpl.cc -o DBImpl.o
-
 worker_thread.o: worker_thread.cc worker_thread.h
 	$(CC) $(CXXFLAGS) worker_thread.cc -o worker_thread.o
 
