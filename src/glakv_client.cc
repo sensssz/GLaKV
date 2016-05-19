@@ -166,7 +166,7 @@ void execute(uint32_t database_size, int num_exps) {
     uint32_t key = uni_dist(generator);
     for (int count = 0; count < num_exps; ++count) {
         send_get(sockfd, key);
-        if (count % 10 == 0) {
+        if (false) {
             key = uni_dist(generator);
         } else {
             uint32_t next_rank = exp_dist.next();
