@@ -158,6 +158,8 @@ void load_data(uint32_t db_size) {
  * possibility, key + 2 has the second highest possibility, etc.
  */
 void execute(uint32_t database_size, int num_exps) {
+    double total = 0;
+    double zero = 0;
     int sockfd = connect();
     std::random_device rd;
     std::mt19937 generator(rd());
@@ -170,11 +172,16 @@ void execute(uint32_t database_size, int num_exps) {
             key = uni_dist(generator);
         } else {
             uint32_t next_rank = exp_dist.next();
+            if (next_rank == 0) {
+                zero++;
+            }
+            total++;
             key = (next_rank + key + database_size / 3) % database_size;
         }
     }
     send_quit(sockfd);
     close(sockfd);
+    cout << "zero rate: " << zero / total << endl;
 }
 
 void run(int num_threads, uint32_t database_size, int num_exps) {
