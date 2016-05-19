@@ -22,7 +22,6 @@ profile: exec
 
 test: exp_dist_test
 	./exp_dist_test
-	rm exp_dist_test
 
 exec: $(OBJS)
 	$(CC) $(LDFLAGS) $(SERVEROBJS) -o glakv_server
