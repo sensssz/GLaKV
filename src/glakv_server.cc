@@ -170,7 +170,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uin
 }
 
 bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetch_cache, string &val) {
-    cout << "Checking prefetch cache" << endl;
+//    cout << "Checking prefetch cache" << endl;
     auto iter = prefetch_cache.find(key);
     if (iter == prefetch_cache.end()) {
         prefetch_cache.clear();
@@ -208,7 +208,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 prefetch_for_key(db, pool, key, prefetch_cache);
                 continue;
             }
-            cout << "Submitting task" << endl;
+//            cout << "Submitting task" << endl;
             pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock, &pool, &prefetch_cache] (bool success, string &val, double time) {
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
