@@ -30,8 +30,10 @@ int main(int argc, char *argv[]) {
     }
 
     for (auto iter : map) {
-        string val(map[iter.second] / 100, '*');
-        cout << iter.first << ": " << val << endl;
+        if (iter.second / 100 > 0) {
+            string val(iter.second / 100, '*');
+            cout << iter.first << ": " << val << endl;
+        }
     }
 
     return 0;
