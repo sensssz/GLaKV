@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
     int help_flag = 0;
     string dir = "glakv_home";
     int num_exp = 0;
-    double cache_size = CACHE_SIZE / 100;
+    double cache_size = CACHE_SIZE;
     parse_opts(argc, argv, help_flag, dir, num_exp, cache_size);
 
     if (help_flag) {
