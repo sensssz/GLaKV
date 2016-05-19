@@ -18,7 +18,7 @@ test: exp_dist_test
 
 exec: $(OBJS)
 	$(CC) $(LDFLAGS) $(SERVEROBJS) -o glakv_server
-	$(CC) $(LDFLAGS) $(CLIENTOBJS)-o glakv_client
+	$(CC) $(LDFLAGS) $(CLIENTOBJS) -o glakv_client
 
 glakv_client.o: glakv_client.cc config.h
 	$(CC) $(CXXFLAGS) glakv_client.cc -o glakv_client.o
