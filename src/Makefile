@@ -3,15 +3,17 @@ SRC = .
 INCLUDE = -I$(CUSTOM_USR)/include -I$(SRC)
 LIBS = -lboost_thread
 LDFLAGS = -L$(CUSTOM_USR)/lib $(LIBS)
-CXXFLAGS = -Wall -Werror -std=c++11 -c -O3 $(INCLUDE)
+CXXFLAGS = -Wall -Werror -std=c++11 -c $(INCLUDE)
 SERVEROBJS = DBImpl.o fakeDB.o lrucache.o worker_thread.o thread_pool.o glakv_server.o
 CLIENTOBJS = glakv_client.o exponential_distribution.o
 OBJS = $(SERVEROBJS) $(CLIENTOBJS)
 
-all: exec
+all: release
+
+release: CXXFLAGS += -O3
+release: exec
 
 debug: CXXFLAGS += -g
-debug: LDFLAGS += -g
 debug: exec
 
 profile: CXXFLAGS += -pg
