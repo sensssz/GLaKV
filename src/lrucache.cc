@@ -39,7 +39,7 @@ bool LRUCache::get(uint32_t key, string &val) {
     shared_lock<shared_mutex> read_lock(mutex);
     auto map_iter = cache.find(key);
     if (map_iter != cache.end()) {
-        val = map_iter->first;
+        val = map_iter->second.first;
         read_lock.unlock();
         upgrade_lock<shared_mutex> lock(mutex);
         upgrade_to_unique_lock<shared_mutex> write_lock(lock);
