@@ -9,6 +9,7 @@
 
 #define ENTRY_SIZE ((uint64_t) 1 + VAL_LEN)
 #define BUF_SIZE   ((DB_SIZE * ENTRY_SIZE) / 2000)
+#define MIN(x, y)  ((x) < (y) ? (x) : (y))
 
 using std::ifstream;
 using std::ofstream;
@@ -87,12 +88,15 @@ void DBImpl::create_if_not_exists(string &dir) {
     if (file.fail()) {
         // Need to create a new file
         ofstream db_file(dir + "glakv.db");
-        char *buf = new char[BUF_SIZE];
-        bzero(buf, BUF_SIZE);
         uint64_t total_size = sizeof(uint32_t) + UINT32_MAX * ENTRY_SIZE;
-        uint64_t count = (2 * total_size - 1) / BUF_SIZE;
-        for (uint64_t i = 0; i < count; ++i) {
-            db_file.write(buf, BUF_SIZE);
+        const uint64_t count = 2000;
+        uint64_t buf_size = total_size / count;
+        char *buf = new char[buf_size];
+        bzero(buf, buf_size);
+        while (total_size > 0) {
+            uint64_t write_size = MIN(total_size, buf_size);
+            db_file.write(buf, (std::streamsize) write_size);
+            total_size -= write_size;
         }
         db_file.close();
     }
