@@ -48,8 +48,8 @@ void worker_thread::start() {
                         cout << prediction << ',';
                         success = db.get(prediction, val);
                         db_task.callback(success, val, prediction);
-                        cout << endl;
                     }
+                    cout << endl;
                     break;
                 case noop:
                     break;
