@@ -6,11 +6,13 @@
 
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <iostream>
 
 #define ENTRY_SIZE ((uint64_t) 1 + VAL_LEN)
-#define BUF_SIZE   ((DB_SIZE * ENTRY_SIZE) / 2000)
 #define MIN(x, y)  ((x) < (y) ? (x) : (y))
 
+using std::cout;
+using std::endl;
 using std::ifstream;
 using std::ofstream;
 
