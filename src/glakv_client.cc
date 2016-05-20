@@ -179,7 +179,9 @@ void execute(uint32_t database_size, int num_exps) {
                 zero++;
             }
             total++;
+            cout << key << ": ";
             key = (next_rank + key + database_size / 3) % database_size;
+            cout << key << endl;
             if (0 <= next_rank && next_rank <= 2) {
                 hit_count++;
             }
