@@ -279,6 +279,7 @@ int main(int argc, char *argv[])
     }
 
     fakeDB db(dir, num_prefetch);
+    cout << "db_size is " << db.size() << endl;
     int sockfd = setup_server();
     int newsockfd;
     socklen_t clilen;
