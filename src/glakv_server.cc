@@ -159,12 +159,14 @@ uint64_t get_uint64(char *buf) {
 
 void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uint32_t, string> &prefetch_cache) {
     if (prefetch) {
-        pool.submit_task({fetch, key, [&prefetch_cache] (bool success, string &val, double prediction) {
-            if (success) {
-                uint32_t predicted_key = (uint32_t) prediction;
-                prefetch_cache[predicted_key] = val;
-            }
-        }});
+        for (int count = 0; count < num_prefetch; ++count) {
+            uint32_t prediction = (key + count + db.size() / 3) % db.size();
+            pool.submit_task({fetch, prediction, [&prefetch_cache] (bool success, string &val, double) {
+                if (success) {
+                    prefetch_cache[prediction] = val;
+                }
+            }});
+        }
     }
 }
 

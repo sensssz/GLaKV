@@ -42,19 +42,14 @@ void worker_thread::start() {
                     db.del(db_task.key);
                     break;
                 case fetch:
-                    for (int count = 0; count < num_prefetch; ++count) {
-                        uint32_t prediction = (db_task.key + count + db.size() / 3) % db.size();
-                        success = db.get(prediction, val);
-                        db_task.callback(success, val, prediction);
-                    }
+                    success = db.get(db_task.key, val);
                     break;
                 case noop:
                     break;
                 default:
                     break;
             }
-            if (db_task.operation != fetch &&
-                db_task.operation != noop) {
+            if (db_task.operation != noop) {
                 auto end = std::chrono::high_resolution_clock::now();
                 auto diff = std::chrono::duration_cast<microseconds>(end - db_task.birth_time);
                 db_task.callback(success, val, diff.count());
