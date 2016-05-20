@@ -174,10 +174,11 @@ bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetc
     auto iter = prefetch_cache.find(key);
     if (iter == prefetch_cache.end()) {
         if (prefetch_cache.size() > 0) {
-            cout << "Key is " << key << endl;
+            cout << key << ": ";
             for (auto pair : prefetch_cache) {
-                cout << pair.first << ": " << pair.second << endl;
+                cout << pair.first << ',';
             }
+            cout << endl;
         } else {
             cout << "Prefetch is taking too much time" << endl;
         }
