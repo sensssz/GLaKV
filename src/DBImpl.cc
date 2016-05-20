@@ -87,6 +87,7 @@ void DBImpl::create_if_not_exists(string &dir) {
     ifstream file(dir + "glakv.db");
     if (file.fail()) {
         // Need to create a new file
+        cout << "Initializing new db file..." << endl;
         ofstream db_file(dir + "glakv.db");
         uint64_t total_size = sizeof(uint32_t) + UINT32_MAX * ENTRY_SIZE;
         const uint64_t count = 2000;
@@ -99,6 +100,7 @@ void DBImpl::create_if_not_exists(string &dir) {
             total_size -= write_size;
         }
         db_file.close();
+        cout << "New db file created" << endl;
     }
 }
 
