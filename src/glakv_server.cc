@@ -167,7 +167,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uin
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
             pool.submit_task({fetch, prediction, [&prefetch_cache, &prediction] (bool success, string &val, double) {
                 if (success) {
-                    prefetch_cache[prediction] = val;
+//                    prefetch_cache[prediction] = val;
                 }
             }});
         }
@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    fakeDB db(dir, (uint32_t) num_prefetch);
+    DBImpl db(dir);
     int sockfd = setup_server();
     int newsockfd;
     socklen_t clilen;
