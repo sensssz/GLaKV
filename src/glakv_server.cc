@@ -114,6 +114,7 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
                 break;
             case 't':
                 num_threads = atoi(optarg);
+                break;
             case '?':
                 break;
             default:
