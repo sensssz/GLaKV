@@ -33,6 +33,9 @@ do
                 export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
                 echo -n "${t},${m},${c},${p}," >> ${output_path}/${exp_name}
                 ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+                if [[ ! $? -eq 0 ]]; then
+                    echo '' >> ${output_path}/${exp_name}
+                fi
 EOF
                 sleep 2
                 ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp}

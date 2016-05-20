@@ -48,8 +48,8 @@ using std::unordered_map;
 static bool quit = false;
 static bool prefetch = false;
 static int num_prefetch = NUM_PREFETCH;
-static vector<thread> threads;
-static atomic<int> num_threads(0);
+static vector<thread> clients;
+static atomic<int> num_clients(0);
 static bool reported = true;
 static double read_perc = 1;
 
@@ -166,9 +166,9 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uin
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
             pool.submit_task({fetch, prediction, [&prefetch_cache, &prediction] (bool success, string &val, double) {
-                if (success) {
+//                if (success) {
 //                    prefetch_cache[prediction] = val;
-                }
+//                }
             }});
         }
     }
@@ -206,23 +206,23 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
-            string value;
-            auto start = std::chrono::high_resolution_clock::now();
-            if (check_prefetch_cache(key, prefetch_cache, value)) {
-                prefetch_for_key(db, pool, key, prefetch_cache);
-                auto diff = std::chrono::high_resolution_clock::now() - start;
-                char res[BUF_LEN];
-                uint64_t res_len = 0;
-                res[0] = 1;
-                store_uint64(res + 1, value.size());
-                memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
-                res_len = 1 + INT_LEN + value.size();
-                write(sockfd, res, res_len);
-                lock.lock();
-                latencies.push_back(diff.count());
-                lock.unlock();
-                continue;
-            }
+//            string value;
+//            auto start = std::chrono::high_resolution_clock::now();
+//            if (check_prefetch_cache(key, prefetch_cache, value)) {
+//                prefetch_for_key(db, pool, key, prefetch_cache);
+//                auto diff = std::chrono::high_resolution_clock::now() - start;
+//                char res[BUF_LEN];
+//                uint64_t res_len = 0;
+//                res[0] = 1;
+//                store_uint64(res + 1, value.size());
+//                memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
+//                res_len = 1 + INT_LEN + value.size();
+//                write(sockfd, res, res_len);
+//                lock.lock();
+//                latencies.push_back(diff.count());
+//                lock.unlock();
+//                continue;
+//            }
             pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock, &pool, &prefetch_cache] (bool success, string &val, double time) {
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
@@ -272,7 +272,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             break;
         }
     }
-    --num_threads;
+    --num_clients;
     close(sockfd);
 }
 
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
                            &clilen);
         if (newsockfd < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                if (num_threads == 0 && !reported) {
+                if (num_clients == 0 && !reported) {
                     double sum = 0;
                     for (auto latency : latencies) {
                         sum += latency;
@@ -335,11 +335,11 @@ int main(int argc, char *argv[])
         flags = fcntl(newsockfd, F_GETFL, 0);
         fcntl(newsockfd, F_SETFL, flags & ~O_NONBLOCK);
         thread t(serve_client, newsockfd, std::ref(pool), std::ref(db), std::ref(latencies), std::ref(lock));
-        threads.push_back(std::move(t));
-        ++num_threads;
+        clients.push_back(std::move(t));
+        ++num_clients;
     }
 
-    for (auto &t : threads) {
+    for (auto &t : clients) {
         t.join();
     }
     close(sockfd);
