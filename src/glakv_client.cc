@@ -180,7 +180,6 @@ void execute(uint32_t database_size, int num_exps) {
             total++;
             key = (next_rank + key + database_size / 3) % database_size;
         }
-        std::this_thread::sleep_for(microseconds(400));
     }
     send_quit(sockfd);
     close(sockfd);

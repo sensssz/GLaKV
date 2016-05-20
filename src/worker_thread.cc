@@ -28,32 +28,30 @@ void worker_thread::start() {
                 std::this_thread::sleep_for(microseconds(2));
                 continue;
             }
-            string val;
+            db_task.task_state = processing;
             bool success = true;
             switch (db_task.operation) {
                 case get:
-                    success = db.get(db_task.key, val);
+                    success = db.get(db_task.key, db_task.val);
                     break;
                 case put:
-                    val = string(db_task.val, db_task.vlen);
-                    db.put(db_task.key, val);
+                    db.put(db_task.key, db_task.val);
                     break;
                 case del:
                     db.del(db_task.key);
                     break;
                 case fetch:
-                    success = db.get(db_task.key, val);
+                    success = db.get(db_task.key, db_task.val);
                     break;
                 case noop:
                     break;
                 default:
                     break;
             }
-            if (db_task.operation != noop) {
-                auto end = std::chrono::high_resolution_clock::now();
-                auto diff = std::chrono::duration_cast<microseconds>(end - db_task.birth_time);
-                db_task.callback(success, val, diff.count());
-            }
+            db_task.task_state = finished;
+            auto end = std::chrono::high_resolution_clock::now();
+            auto diff = std::chrono::duration_cast<microseconds>(end - db_task.birth_time);
+            db_task.callback(success, db_task.val, diff.count());
         }
     });
 }

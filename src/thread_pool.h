@@ -26,6 +26,7 @@ public:
     thread_pool(DB &db);
     thread_pool(DB &db, size_t pool_size);
     ~thread_pool();
+    void submit_task(const task &db_task);
     void submit_task(task db_task);
 };
 

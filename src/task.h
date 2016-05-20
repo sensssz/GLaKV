@@ -14,26 +14,28 @@ using std::function;
 using std::string;
 
 enum opcode {get, put, del, fetch, noop};
+enum state {in_queue, processing, finished};
 
 struct task {
     opcode      operation;
     uint32_t    key;
-    char       *val;
-    size_t      vlen;
+    string      val;
+    state       task_state;
     std::chrono::high_resolution_clock::time_point  birth_time;
     function<void(bool, string&, double)> callback;
 
-    task() : operation(noop), key(0), val(nullptr), vlen(0) {
+    task() : operation(noop), key(0) {
+        task_state = in_queue;
         birth_time = std::chrono::high_resolution_clock::now();
     }
     task(opcode op, uint32_t key_in, function<void(bool, string &, double)> &&callback_in)
-            : operation(op), key(key_in), val(nullptr),
-              vlen(0), callback(std::move(callback_in)) {
+            : operation(op), key(key_in), callback(std::move(callback_in)) {
+        task_state = in_queue;
         birth_time = std::chrono::high_resolution_clock::now();
     }
-    task(opcode op, uint32_t key_in, char *val_in, size_t vlen_in, function<void(bool, string &, double)> &&callback_in)
-            : operation(op), key(key_in), val(val_in),
-              vlen(vlen_in), callback(std::move(callback_in)) {
+    task(opcode op, uint32_t key_in, string val_in, function<void(bool, string &, double)> &&callback_in)
+            : operation(op), key(key_in), val(val_in), callback(std::move(callback_in)) {
+        task_state = in_queue;
         birth_time = std::chrono::high_resolution_clock::now();
     }
 };

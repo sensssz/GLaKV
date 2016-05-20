@@ -161,32 +161,42 @@ uint64_t get_uint64(char *buf) {
     return *((uint64_t *) buf);
 }
 
-void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uint32_t, string> &prefetch_cache) {
+void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefetch_tasks) {
     if (prefetch) {
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
-            pool.submit_task({fetch, prediction, [] (bool, string, double) {}});
+            prefetch_tasks.push_back({fetch, prediction, [] (bool, string &, double) {}});
+            const task &db_task = prefetch_tasks.back();
+            pool.submit_task(db_task);
+            auto iter = --(prefetch_tasks.end());
+            db_task.callback = [&prefetch_tasks, &iter] (bool, string &, double) {
+                prefetch_tasks.erase(iter);
+            };
         }
     }
 }
 
-bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetch_cache, string &val) {
-//    cout << "Checking prefetch cache" << endl;
-//    if (prefetch_cache.size() != (size_t) num_prefetch) {
-//        cout << "Prefetch is taking too much time: fetched " << prefetch_cache.size() << endl;
-//    }
-    auto iter = prefetch_cache.find(key);
-    if (iter == prefetch_cache.end()) {
-        prefetch_cache.clear();
-        return false;
+bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,function<void(bool, string &, double)> callback) {
+    for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
+        if (iter->key == key) {
+            if (iter->task_state == finished) {
+                val = iter->val;
+            } else {
+                iter->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
+                    callback(success, value, time);
+                    prefetch_tasks.erase(iter);
+                };;
+            }
+            return true;
+        } else if (iter->task_state == in_queue) {
+            iter->operation = noop;
+        }
     }
-    val = iter->second;
-    prefetch_cache.clear();
-    return true;
+    return false;
 }
 
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
-    unordered_map<uint32_t, string> prefetch_cache;
+    list<task> prefetch_tasks;
     reported = false;
     char buffer[BUF_LEN];
     uint32_t key;
@@ -202,24 +212,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
-//            string value;
-//            auto start = std::chrono::high_resolution_clock::now();
-//            if (check_prefetch_cache(key, prefetch_cache, value)) {
-//                prefetch_for_key(db, pool, key, prefetch_cache);
-//                auto diff = std::chrono::high_resolution_clock::now() - start;
-//                char res[BUF_LEN];
-//                uint64_t res_len = 0;
-//                res[0] = 1;
-//                store_uint64(res + 1, value.size());
-//                memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
-//                res_len = 1 + INT_LEN + value.size();
-//                write(sockfd, res, res_len);
-//                lock.lock();
-//                latencies.push_back(diff.count());
-//                lock.unlock();
-//                continue;
-//            }
-            pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock, &pool, &prefetch_cache] (bool success, string &val, double time) {
+            auto get_callback = [&key, &db, &sockfd, &latencies, &lock, &pool] (bool success, string &val, double time) {
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
                 if (success) {
@@ -227,7 +220,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                     store_uint64(res + 1, val.size());
                     memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
                     res_len = 1 + INT_LEN + val.size();
-                    prefetch_for_key(db, pool, key, prefetch_cache);
+                    prefetch_for_key(db, pool, key, prefetch_tasks);
                 } else {
                     res[0] = 0;
                     res_len = 1;
@@ -239,12 +232,31 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 lock.lock();
                 latencies.push_back(time);
                 lock.unlock();
-            }});
+            };
+            string value;
+            auto start = std::chrono::high_resolution_clock::now();
+            if (check_prefetch_cache(key, prefetch_tasks, value, get_callback)) {
+                prefetch_for_key(db, pool, key, prefetch_tasks);
+                auto diff = std::chrono::high_resolution_clock::now() - start;
+                char res[BUF_LEN];
+                uint64_t res_len = 0;
+                res[0] = 1;
+                store_uint64(res + 1, value.size());
+                memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
+                res_len = 1 + INT_LEN + value.size();
+                write(sockfd, res, res_len);
+                lock.lock();
+                latencies.push_back(diff.count());
+                lock.unlock();
+                continue;
+            }
+            pool.submit_task({get, key, std::move(get_callback)});
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
             key = get_uint32(buffer + PUT_LEN);
             uint64_t vlen = get_uint64(buffer + PUT_LEN + KEY_LEN);
             char *val_buf = buffer + PUT_LEN + KEY_LEN + INT_LEN;
-            pool.submit_task({put, key, val_buf, vlen, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
+            string value(val_buf, vlen);
+            pool.submit_task({put, key, value, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
                 if (write(sockfd, &success, 1) != 1) {
                     cerr << "Error sending result to client" << endl;
                     return;
