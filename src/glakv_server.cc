@@ -161,7 +161,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uin
     if (prefetch) {
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
-            pool.submit_task({fetch, prediction, [&prefetch_cache] (bool success, string &val, double) {
+            pool.submit_task({fetch, prediction, [&prefetch_cache, &prediction] (bool success, string &val, double) {
                 if (success) {
                     prefetch_cache[prediction] = val;
                 }
