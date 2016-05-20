@@ -44,7 +44,7 @@ void worker_thread::start() {
                 case fetch:
                     cout << db_task.key << ": ";
                     for (int count = 0; count < num_prefetch; ++count) {
-                        uint32_t prediction = (db_task.key + count + db.size()) % db.size();
+                        uint32_t prediction = (db_task.key + count + db.size() / 3) % db.size();
                         cout << prediction << ',';
                         success = db.get(prediction, val);
                         db_task.callback(success, val, prediction);
