@@ -284,8 +284,8 @@ int main(int argc, char *argv[])
     string dir = "glakv_home";
     int num_exp = 0;
     double cache_size = CACHE_SIZE;
-    int num_threads = 10;
-    parse_opts(argc, argv, help_flag, dir, num_exp, cache_size, num_threads);
+    int num_workers = 10;
+    parse_opts(argc, argv, help_flag, dir, num_exp, cache_size, num_workers);
 
     if (help_flag) {
         usage(cout);
@@ -302,7 +302,7 @@ int main(int argc, char *argv[])
     int flags = fcntl(sockfd, F_GETFL, 0);
     fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
     vector<double> latencies;
-    thread_pool pool(db, (size_t) num_threads);
+    thread_pool pool(db, (size_t) num_workers);
     mutex lock;
     int count = 0;
     while (!quit) {
