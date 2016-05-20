@@ -46,7 +46,7 @@ static double lambda = 1;
 void error(const char *msg)
 {
     perror(msg);
-    exit(0);
+    exit(1);
 }
 
 static int connect() {
