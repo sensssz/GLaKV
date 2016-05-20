@@ -163,7 +163,9 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uin
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t  prediction = (original_key + count + db.size() / 3) % db.size();
             pool.submit_task({fetch, prediction, [&prefetch_cache, &prediction] (bool success, string &val, double) {
-                prefetch_cache[prediction] = val;
+                if (success) {
+                    prefetch_cache[prediction] = val;
+                }
             }});
         }
     }
@@ -211,7 +213,6 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 prefetch_for_key(db, pool, key, prefetch_cache);
                 continue;
             }
-//            cout << "Submitting task" << endl;
             pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock, &pool, &prefetch_cache] (bool success, string &val, double time) {
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
