@@ -184,7 +184,7 @@ void execute(uint32_t database_size, int num_exps) {
                 hit_count++;
             }
         }
-        std::this_thread::sleep_for(microseconds(200));
+        std::this_thread::sleep_for(microseconds(400));
     }
     send_quit(sockfd);
     close(sockfd);

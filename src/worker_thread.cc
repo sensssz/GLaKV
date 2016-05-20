@@ -49,11 +49,9 @@ void worker_thread::start() {
                 default:
                     break;
             }
-            if (db_task.operation != noop) {
-                auto end = std::chrono::high_resolution_clock::now();
-                auto diff = std::chrono::duration_cast<microseconds>(end - db_task.birth_time);
-                db_task.callback(success, val, diff.count());
-            }
+            auto end = std::chrono::high_resolution_clock::now();
+            auto diff = std::chrono::duration_cast<microseconds>(end - db_task.birth_time);
+            db_task.callback(success, val, diff.count());
         }
     });
 }
