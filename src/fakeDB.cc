@@ -14,10 +14,10 @@
 
 using std::chrono::microseconds;
 
-const int CONTENTION = 100;
-const int GET_TIME = 2000;
-const int PUT_TIME = 4000;
-const int DEL_TIME = 3000;
+const int CONTENTION = 10;
+const int GET_TIME = 200;
+const int PUT_TIME = 400;
+const int DEL_TIME = 300;
 
 fakeDB::fakeDB(string dir, uint32_t num_prefetch_in) : num_prefetch(num_prefetch_in) {
     if (dir[dir.size() - 1] != '/') {
