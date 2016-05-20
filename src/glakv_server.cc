@@ -167,7 +167,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefe
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
             prefetch_tasks.push_back({fetch, prediction, [] (bool, string &, double) {}});
             const task &db_task = prefetch_tasks.back();
-            pool.submit_task(db_task);
+            pool.submit_task_ref(db_task);
             auto iter = --(prefetch_tasks.end());
             db_task.callback = [&prefetch_tasks, &iter] (bool, string &, double) {
                 prefetch_tasks.erase(iter);
