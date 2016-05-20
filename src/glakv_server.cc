@@ -176,7 +176,7 @@ bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetc
     auto iter = prefetch_cache.find(key);
     if (iter == prefetch_cache.end()) {
         if (prefetch_cache.size() != (size_t) num_prefetch) {
-            cout << "Prefetch is taking too much time" << endl;
+            cout << "Prefetch is taking too much time: fetched" << prefetch_cache.size() << endl;
         }
         prefetch_cache.clear();
         return false;
