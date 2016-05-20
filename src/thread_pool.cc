@@ -14,7 +14,7 @@ thread_pool::thread_pool(DB &db, int num_prefetch) : thread_pool(db, 5, num_pref
 
 thread_pool::thread_pool(DB &db, size_t pool_size, int num_prefetch) {
     for (size_t count = 0; count < pool_size; ++count) {
-        workers.emplace_back(task_queue, num_prefetch, db);
+        workers.emplace_back(task_queue, db, num_prefetch);
     }
     for (auto &worker : workers) {
         worker.start();
