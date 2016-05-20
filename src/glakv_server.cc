@@ -203,7 +203,13 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             key = get_uint32(buffer + GET_LEN);
             string value;
             if (check_prefetch_cache(key, prefetch_cache, value)) {
-                write(sockfd, value.data(), value.length());
+                char res[BUF_LEN];
+                uint64_t res_len = 0;
+                res[0] = 1;
+                store_uint64(res + 1, value.size());
+                memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
+                res_len = 1 + INT_LEN + value.size();
+                write(sockfd, res, res_len);
                 lock.lock();
                 latencies.push_back(0);
                 lock.unlock();
