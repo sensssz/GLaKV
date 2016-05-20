@@ -21,12 +21,13 @@ using moodycamel::ConcurrentQueue;
 class worker_thread {
 private:
     ConcurrentQueue<task> &task_queue;
+    int num_prefetch;
     thread worker;
     bool quit;
     DB &db;
 public:
-    worker_thread(ConcurrentQueue<task> &queue, DB &db);
-    worker_thread(worker_thread &&other);
+    worker_thread(ConcurrentQueue<task> &queue, DB &db, int num_prefetch);
+    worker_thread(worker_thread &&other, int num_prefetch);
     void start();
     void set_stop();
     void join();

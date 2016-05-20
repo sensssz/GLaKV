@@ -23,8 +23,8 @@ private:
     ConcurrentQueue<task> task_queue;
     vector<worker_thread> workers;
 public:
-    thread_pool(DB &db);
-    thread_pool(DB &db, size_t pool_size);
+    thread_pool(DB &db, int num_prefetch);
+    thread_pool(DB &db, size_t pool_size, int num_prefetch);
     ~thread_pool();
     void submit_task(task db_task);
 };

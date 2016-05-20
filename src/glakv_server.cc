@@ -159,25 +159,22 @@ uint64_t get_uint64(char *buf) {
 
 void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uint32_t, string> &prefetch_cache) {
     if (prefetch) {
-        uint32_t original_key = key;
-        for (int count = 0; count < num_prefetch; ++count) {
-            uint32_t  prediction = (original_key + count + db.size() / 3) % db.size();
-            pool.submit_task({fetch, prediction, [&prefetch_cache, &prediction] (bool success, string &val, double) {
-                if (success) {
-                    prefetch_cache[prediction] = val;
-                }
-            }});
-        }
+        pool.submit_task({fetch, key, [&prefetch_cache] (bool success, string &val, double prediction) {
+            if (success) {
+                uint32_t predicted_key = (uint32_t) prediction;
+                prefetch_cache[predicted_key] = val;
+            }
+        }});
     }
 }
 
 bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetch_cache, string &val) {
 //    cout << "Checking prefetch cache" << endl;
+    if (prefetch_cache.size() != (size_t) num_prefetch) {
+        cout << "Prefetch is taking too much time: fetched " << prefetch_cache.size() << endl;
+    }
     auto iter = prefetch_cache.find(key);
     if (iter == prefetch_cache.end()) {
-        if (prefetch_cache.size() != (size_t) num_prefetch) {
-            cout << "Prefetch is taking too much time: fetched" << prefetch_cache.size() << endl;
-        }
         prefetch_cache.clear();
         return false;
     }
@@ -291,7 +288,7 @@ int main(int argc, char *argv[])
     int flags = fcntl(sockfd, F_GETFL, 0);
     fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
     vector<double> latencies;
-    thread_pool pool(db);
+    thread_pool pool(db, num_prefetch);
     mutex lock;
     int count = 0;
     while (!quit) {

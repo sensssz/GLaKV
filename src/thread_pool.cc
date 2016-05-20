@@ -9,12 +9,12 @@
 using std::cout;
 using std::endl;
 
-thread_pool::thread_pool(DB &db) : thread_pool(db, 5) {
+thread_pool::thread_pool(DB &db, int num_prefetch) : thread_pool(db, 5, num_prefetch) {
 }
 
-thread_pool::thread_pool(DB &db, size_t pool_size) {
+thread_pool::thread_pool(DB &db, size_t pool_size, int num_prefetch) {
     for (size_t count = 0; count < pool_size; ++count) {
-        workers.emplace_back(task_queue, db);
+        workers.emplace_back(task_queue, num_prefetch, db);
     }
     for (auto &worker : workers) {
         worker.start();

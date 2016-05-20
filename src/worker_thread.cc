@@ -13,12 +13,12 @@ using std::endl;
 using std::string;
 using std::chrono::microseconds;
 
-worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in)
-        : task_queue(queue), quit(false), db(db_in) {}
+worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in, int num_prefetch_in)
+        : task_queue(queue), num_prefetch(num_prefetch_in), quit(false), db(db_in) {}
 
-worker_thread::worker_thread(worker_thread &&other)
-        : task_queue(other.task_queue), worker(std::move(other.worker)),
-          quit(other.quit), db(other.db) {}
+worker_thread::worker_thread(worker_thread &&other, int num_prefetch_in)
+        : task_queue(other.task_queue), num_prefetch(num_prefetch_in),
+          worker(std::move(other.worker)), quit(other.quit), db(other.db) {}
 
 void worker_thread::start() {
     worker = thread([this] {
@@ -42,16 +42,23 @@ void worker_thread::start() {
                     db.del(db_task.key);
                     break;
                 case fetch:
-                    success = db.get(db_task.key, val);
+                    for (int count = 0; count < num_prefetch; ++count) {
+                        uint32_t prediction = (db_task.key + count + db.size()) % db.size();
+                        success = db.get(prediction, val);
+                        db_task.callback(success, val, prediction);
+                    }
                     break;
                 case noop:
                     break;
                 default:
                     break;
             }
-            auto end = std::chrono::high_resolution_clock::now();
-            auto diff = std::chrono::duration_cast<microseconds>(end - db_task.birth_time);
-            db_task.callback(success, val, diff.count());
+            if (db_task.operation != fetch &&
+                db_task.operation != noop) {
+                auto end = std::chrono::high_resolution_clock::now();
+                auto diff = std::chrono::duration_cast<microseconds>(end - db_task.birth_time);
+                db_task.callback(success, val, diff.count());
+            }
         }
     });
 }
