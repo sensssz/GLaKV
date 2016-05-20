@@ -37,7 +37,7 @@ EOF
                 sleep 2
                 ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp}
                 if [[ $? -ne 0 ]]; then
-                    ssh salat3 echo '' >> ${output_path}/${exp_name}
+                    ssh salat3 "echo '' >> ${output_path}/${exp_name}"
                 fi
                 sleep 1
             done
