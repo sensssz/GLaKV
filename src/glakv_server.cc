@@ -176,9 +176,9 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, unordered_map<uin
 
 bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetch_cache, string &val) {
 //    cout << "Checking prefetch cache" << endl;
-    if (prefetch_cache.size() != (size_t) num_prefetch) {
-        cout << "Prefetch is taking too much time: fetched " << prefetch_cache.size() << endl;
-    }
+//    if (prefetch_cache.size() != (size_t) num_prefetch) {
+//        cout << "Prefetch is taking too much time: fetched " << prefetch_cache.size() << endl;
+//    }
     auto iter = prefetch_cache.find(key);
     if (iter == prefetch_cache.end()) {
         prefetch_cache.clear();
