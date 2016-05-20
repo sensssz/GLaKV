@@ -22,7 +22,7 @@ for t in 10 20 30;
 do
     for m in 0.15 0.2 0.25;
     do
-        for((c=64;c<=256;c*=2));
+        for((c=1;c<=32;c*=2));
         do
             for p in `seq 0 5`;
             do
