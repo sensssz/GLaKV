@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    DBImpl db(dir);
+    fakeDB db(dir, num_prefetch);
     int sockfd = setup_server();
     int newsockfd;
     socklen_t clilen;
