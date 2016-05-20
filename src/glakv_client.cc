@@ -166,6 +166,7 @@ void execute(uint32_t database_size, int num_exps) {
     std::uniform_int_distribution<uint32_t> uni_dist(0, database_size - 1);
     exponential_distribution exp_dist(lambda, 1000);
     uint32_t key = uni_dist(generator);
+    uint32_t hit_count = 0;
     for (int count = 0; count < num_exps; ++count) {
         send_get(sockfd, key);
         if (false) {
@@ -177,10 +178,14 @@ void execute(uint32_t database_size, int num_exps) {
             }
             total++;
             key = (next_rank + key + database_size / 3) % database_size;
+            if (0 <= next_rank && next_rank <= 2) {
+                hit_count++;
+            }
         }
     }
     send_quit(sockfd);
     close(sockfd);
+    cout << "Hit count: " << endl;
 //    cout << "zero rate: " << zero / total << endl;
 }
 
