@@ -26,6 +26,10 @@ DBImpl::DBImpl(string &dir, uint64_t cache_size) : cache(cache_size) {
     dir += "glakv.db";
     db_file = open(dir.c_str(), O_RDWR);
     read(db_file, &(DBImpl::db_size), sizeof(uint32_t));
+    string val;
+    for (uint32_t key = 0; key < db_size; ++key) {
+        assert(get(key, val));
+    }
 }
 
 DBImpl::~DBImpl() {
