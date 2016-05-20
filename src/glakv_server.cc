@@ -203,6 +203,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             string value;
             auto start = std::chrono::high_resolution_clock::now();
             if (check_prefetch_cache(key, prefetch_cache, value)) {
+                prefetch_for_key(db, pool, key, prefetch_cache);
                 auto diff = std::chrono::high_resolution_clock::now() - start;
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
@@ -214,7 +215,6 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 lock.lock();
                 latencies.push_back(diff.count());
                 lock.unlock();
-                prefetch_for_key(db, pool, key, prefetch_cache);
                 continue;
             }
             pool.submit_task({get, key, [&key, &db, &sockfd, &latencies, &lock, &pool, &prefetch_cache] (bool success, string &val, double time) {
