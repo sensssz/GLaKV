@@ -18,6 +18,7 @@
 #include <cstring>
 #include <iostream>
 #include <thread>
+#include <chrono>
 
 #define BUF_LEN     (VAL_LEN * 2)
 #define GET         "Get"
@@ -38,6 +39,7 @@ using std::string;
 using std::thread;
 using std::uniform_int_distribution;
 using std::vector;
+using std::chrono::microseconds;
 
 static double lambda = 1;
 
@@ -182,6 +184,7 @@ void execute(uint32_t database_size, int num_exps) {
                 hit_count++;
             }
         }
+        std::this_thread::sleep_for(microseconds(200));
     }
     send_quit(sockfd);
     close(sockfd);
