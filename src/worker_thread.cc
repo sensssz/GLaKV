@@ -13,12 +13,12 @@ using std::endl;
 using std::string;
 using std::chrono::microseconds;
 
-worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in, int num_prefetch_in)
-        : task_queue(queue), num_prefetch(num_prefetch_in), quit(false), db(db_in) {}
+worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in)
+        : task_queue(queue), quit(false), db(db_in) {}
 
-worker_thread::worker_thread(worker_thread &&other, int num_prefetch_in)
-        : task_queue(other.task_queue), num_prefetch(num_prefetch_in),
-          worker(std::move(other.worker)), quit(other.quit), db(other.db) {}
+worker_thread::worker_thread(worker_thread &&other)
+        : task_queue(other.task_queue), worker(std::move(other.worker)),
+          quit(other.quit), db(other.db) {}
 
 void worker_thread::start() {
     worker = thread([this] {

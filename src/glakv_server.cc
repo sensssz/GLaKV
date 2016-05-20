@@ -73,7 +73,7 @@ void usage(ostream &os) {
     os << "-d       directory to store the database files" << endl;
 }
 
-void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_exp, double &cache_size) {
+void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_exp, double &cache_size, int &num_threads) {
     struct option long_options[] = {
             {"help",    no_argument,       0, 'h'},
             {"prefetch",optional_argument, 0, 'p'},
@@ -81,6 +81,7 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
             {"dir",     required_argument, 0, 'd'},
             {"cache",   required_argument, 0, 'c'},
             {"read",    required_argument, 0, 'r'},
+            {"threads", required_argument, 0, 't'},
             {0, 0, 0, 0}
     };
 
@@ -88,7 +89,7 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
     int option_index;
     help_flag = 0;
     dir = "glakv_home";
-    while ((c = getopt_long(argc, argv, "hn:p:d:c:r:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hn:p:d:c:r:t:", long_options, &option_index)) != -1) {
         switch(c) {
             case 'h':
                 help_flag = 1;
@@ -111,6 +112,8 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
             case 'r':
                 read_perc = atof(optarg) / 100;
                 break;
+            case 't':
+                num_threads = atoi(optarg);
             case '?':
                 break;
             default:
@@ -280,14 +283,15 @@ int main(int argc, char *argv[])
     string dir = "glakv_home";
     int num_exp = 0;
     double cache_size = CACHE_SIZE;
-    parse_opts(argc, argv, help_flag, dir, num_exp, cache_size);
+    int num_threads = 10;
+    parse_opts(argc, argv, help_flag, dir, num_exp, cache_size, num_threads);
 
     if (help_flag) {
         usage(cout);
         return 0;
     }
 
-    fakeDB db(dir, num_prefetch);
+    fakeDB db(dir, (uint32_t) num_prefetch);
     int sockfd = setup_server();
     int newsockfd;
     socklen_t clilen;
@@ -297,7 +301,7 @@ int main(int argc, char *argv[])
     int flags = fcntl(sockfd, F_GETFL, 0);
     fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
     vector<double> latencies;
-    thread_pool pool(db, num_prefetch);
+    thread_pool pool(db, (size_t) num_threads);
     mutex lock;
     int count = 0;
     while (!quit) {
