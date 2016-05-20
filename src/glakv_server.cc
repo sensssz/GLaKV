@@ -212,7 +212,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
-            auto get_callback = [&key, &db, &sockfd, &latencies, &lock, &pool] (bool success, string &val, double time) {
+            auto get_callback = [&key, &db, &sockfd, &prefetch_tasks, &latencies, &lock, &pool] (bool success, string &val, double time) {
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
                 if (success) {
