@@ -7,8 +7,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define BUF_SIZE   536870912
 #define ENTRY_SIZE ((uint64_t) 1 + VAL_LEN)
+#define BUF_SIZE   ((DB_SIZE * ENTRY_SIZE) / 2000)
 
 using std::ifstream;
 using std::ofstream;
