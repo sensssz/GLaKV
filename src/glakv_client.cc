@@ -185,7 +185,7 @@ void execute(uint32_t database_size, int num_exps) {
     }
     send_quit(sockfd);
     close(sockfd);
-    cout << "Hit count: " << endl;
+    cout << "Hit count: " << hit_count << endl;
 //    cout << "zero rate: " << zero / total << endl;
 }
 
