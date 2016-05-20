@@ -201,7 +201,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
             string value;
+            auto start = std::chrono::high_resolution_clock::now();
             if (check_prefetch_cache(key, prefetch_cache, value)) {
+                auto diff = std::chrono::high_resolution_clock::now() - start;
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
                 res[0] = 1;
@@ -210,7 +212,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 res_len = 1 + INT_LEN + value.size();
                 write(sockfd, res, res_len);
                 lock.lock();
-                latencies.push_back(0);
+                latencies.push_back(diff.count());
                 lock.unlock();
                 prefetch_for_key(db, pool, key, prefetch_cache);
                 continue;
