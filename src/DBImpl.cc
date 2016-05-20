@@ -26,12 +26,12 @@ DBImpl::DBImpl(string &dir, uint64_t cache_size) : cache(cache_size) {
     dir += "glakv.db";
     db_file = open(dir.c_str(), O_RDWR);
     read(db_file, &(DBImpl::db_size), sizeof(uint32_t));
-    string val;
-    cout << "Validating db file..." << endl;
-    for (uint32_t key = 0; key < db_size; ++key) {
-        assert(get(key, val));
-    }
-    cout << "db file validated, db size is " << db_size << endl;
+//    string val;
+//    cout << "Validating db file..." << endl;
+//    for (uint32_t key = 0; key < db_size; ++key) {
+//        assert(get(key, val));
+//    }
+//    cout << "db file validated, db size is " << db_size << endl;
 }
 
 DBImpl::~DBImpl() {
