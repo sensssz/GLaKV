@@ -42,6 +42,7 @@ void worker_thread::start() {
                     db.del(db_task.key);
                     break;
                 case fetch:
+                    success = db.get(db_task.key, val);
                     break;
                 case noop:
                     break;
