@@ -178,7 +178,6 @@ bool check_prefetch_cache(uint32_t key, unordered_map<uint32_t, string> &prefetc
         prefetch_cache.clear();
         return false;
     }
-    cout << "Cache hit" << endl;
     val = iter->second;
     prefetch_cache.clear();
     return true;
@@ -285,7 +284,6 @@ int main(int argc, char *argv[])
     }
 
     DBImpl db(dir);
-    cout << "db_size is " << db.size() << endl;
     int sockfd = setup_server();
     int newsockfd;
     socklen_t clilen;

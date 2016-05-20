@@ -42,14 +42,11 @@ void worker_thread::start() {
                     db.del(db_task.key);
                     break;
                 case fetch:
-                    cout << db_task.key << ": ";
                     for (int count = 0; count < num_prefetch; ++count) {
                         uint32_t prediction = (db_task.key + count + db.size() / 3) % db.size();
-                        cout << prediction << ',';
                         success = db.get(prediction, val);
                         db_task.callback(success, val, prediction);
                     }
-                    cout << endl;
                     break;
                 case noop:
                     break;
