@@ -6,21 +6,22 @@
 #define GLAKV_THREAD_POOL_H
 
 #include "task.h"
-#include "concurrentqueue.h"
 #include "worker_thread.h"
 
 #include <mutex>
 #include <condition_variable>
 #include <vector>
 
+#include <boost/lockfree/queue.hpp>
+
 using std::mutex;
 using std::condition_variable;
 using std::vector;
-using moodycamel::ConcurrentQueue;
+using boost::lockfree::queue;
 
 class thread_pool {
 private:
-    ConcurrentQueue<task> task_queue;
+    queue<task> task_queue;
     vector<worker_thread> workers;
 public:
     thread_pool(DB &db);

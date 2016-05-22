@@ -31,9 +31,9 @@ thread_pool::~thread_pool() {
 }
 
 void thread_pool::submit_task_ref(const task &db_task) {
-    task_queue.enqueue(db_task);
+    task_queue.push(db_task);
 }
 
 void thread_pool::submit_task(task db_task) {
-    task_queue.enqueue(std::move(db_task));
+    task_queue.push(std::move(db_task));
 }
