@@ -48,6 +48,7 @@ struct task {
         task_state = rhs.task_state;
         birth_time = rhs.birth_time;
         callback = rhs.callback;
+        return *this;
     }
     ~task() {}
 };
