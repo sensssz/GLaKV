@@ -41,16 +41,6 @@ struct task {
     task(const task &rhs)
             : operation(rhs.operation), key(rhs.key), val(rhs.val),
               task_state(rhs.task_state), birth_time(rhs.birth_time), callback(rhs.callback) {}
-    task &operator=(const task &rhs) {
-        operation = rhs.operation;
-        key = rhs.key;
-        val = rhs.val;
-        task_state = rhs.task_state;
-        birth_time = rhs.birth_time;
-        callback = rhs.callback;
-        return *this;
-    }
-    ~task() {}
 };
 
 #endif //GLAKV_TASK_H
