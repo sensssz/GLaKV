@@ -25,7 +25,7 @@ private:
     bool quit;
     DB &db;
 public:
-    worker_thread(queue<task> &queue, DB &db);
+    worker_thread(queue<task> &queue_in, DB &db);
     worker_thread(worker_thread &&other);
     void start();
     void set_stop();

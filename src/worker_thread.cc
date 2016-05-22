@@ -13,8 +13,8 @@ using std::endl;
 using std::string;
 using std::chrono::microseconds;
 
-worker_thread::worker_thread(queue<task> &queue, DB &db_in)
-        : task_queue(queue), quit(false), db(db_in) {}
+worker_thread::worker_thread(queue<task> &queue_in, DB &db_in)
+        : task_queue(queue_in), quit(false), db(db_in) {}
 
 worker_thread::worker_thread(worker_thread &&other)
         : task_queue(other.task_queue), worker(std::move(other.worker)),
