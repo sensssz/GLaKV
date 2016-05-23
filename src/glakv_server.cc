@@ -18,7 +18,6 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
-#include <future>
 #include <unordered_map>
 
 #define BUF_LEN     (VAL_LEN * 2)
@@ -187,7 +186,7 @@ bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,
                 iter->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
                     callback(success, value, time);
                     prefetch_tasks.erase(iter);
-                };;
+                };
             }
             return true;
         } else if (iter->task_state == in_queue) {
@@ -327,8 +326,8 @@ int main(int argc, char *argv[])
                         sum += latency;
                     }
                     cout << sum / latencies.size() << "," << latencies.size() << endl;
-//                    cout << "Prediction hits: " << prediction_hit << endl;
-//                    cout << "Prefetch hits: " << prefetch_hit << endl;
+                    cout << "Prediction hits: " << prediction_hit << endl;
+                    cout << "Prefetch hits: " << prefetch_hit << endl;
                     cout << "Average queue size: " << queue_size / latencies.size() << endl;
                     latencies.clear();
                     prediction_hit = 0;
