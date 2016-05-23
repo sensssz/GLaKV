@@ -306,7 +306,6 @@ int main(int argc, char *argv[])
     }
 
     fakeDB db(dir, num_prefetch);
-    cout << "db_size is " << db.size() << endl;
     int sockfd = setup_server();
     int newsockfd;
     socklen_t clilen;
@@ -331,8 +330,8 @@ int main(int argc, char *argv[])
                         sum += latency;
                     }
                     cout << sum / latencies.size() << "," << latencies.size() << endl;
-                    cout << "Prediction hits: " << prediction_hit << endl;
-                    cout << "Prefetch hits: " << prefetch_hit << endl;
+//                    cout << "Prediction hits: " << prediction_hit << endl;
+//                    cout << "Prefetch hits: " << prefetch_hit << endl;
                     latencies.clear();
                     prediction_hit = 0;
                     prefetch_hit = 0;
