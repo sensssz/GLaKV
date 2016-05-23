@@ -6,3 +6,5 @@ src/glakv
 src/glakv_home
 src/glakv_client
 src/glakv_server
+src/gmon.out
+src/gprof_analysis
