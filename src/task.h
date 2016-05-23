@@ -38,9 +38,6 @@ struct task {
         task_state = in_queue;
         birth_time = std::chrono::high_resolution_clock::now();
     }
-    task(const task &rhs)
-            : operation(rhs.operation), key(rhs.key), val(rhs.val),
-              task_state(rhs.task_state), birth_time(rhs.birth_time), callback(rhs.callback) {}
 };
 
 #endif //GLAKV_TASK_H

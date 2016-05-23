@@ -7,25 +7,25 @@
 
 #include "DB.h"
 #include "task.h"
+#include "concurrentqueue.h"
 
 #include <mutex>
 #include <thread>
 #include <condition_variable>
-#include <boost/lockfree/queue.hpp>
 
 using std::mutex;
 using std::thread;
 using std::condition_variable;
-using boost::lockfree::queue;
+using moodycamel::ConcurrentQueue;
 
 class worker_thread {
 private:
-    queue<task> &task_queue;
+    ConcurrentQueue<task> &task_queue;
     thread worker;
     bool quit;
     DB &db;
 public:
-    worker_thread(queue<task> &queue_in, DB &db);
+    worker_thread(ConcurrentQueue<task> &queue, DB &db);
     worker_thread(worker_thread &&other);
     void start();
     void set_stop();
