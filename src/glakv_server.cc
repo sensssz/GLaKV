@@ -51,9 +51,9 @@ static int num_prefetch = NUM_PREFETCH;
 static vector<thread> clients;
 static atomic<int> num_clients(0);
 static bool reported = true;
-static double read_perc = 1;
 static double prediction_hit = 0;
 static double prefetch_hit = 0;
+static double queue_size = 0;
 
 void quit_server(int) {
     cout << endl << "Receives CTRL-C, quiting..." << endl;
@@ -82,7 +82,6 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
             {"num",     required_argument, 0, 'n'},
             {"dir",     required_argument, 0, 'd'},
             {"cache",   required_argument, 0, 'c'},
-            {"read",    required_argument, 0, 'r'},
             {"threads", required_argument, 0, 't'},
             {0, 0, 0, 0}
     };
@@ -91,7 +90,7 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
     int option_index;
     help_flag = 0;
     dir = "glakv_home";
-    while ((c = getopt_long(argc, argv, "hn:p:d:c:r:t:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hn:p:d:c:t:", long_options, &option_index)) != -1) {
         switch(c) {
             case 'h':
                 help_flag = 1;
@@ -110,9 +109,6 @@ void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_ex
                 break;
             case 'c':
                 cache_size = atof(optarg) / 100;
-                break;
-            case 'r':
-                read_perc = atof(optarg) / 100;
                 break;
             case 't':
                 num_threads = atoi(optarg);
@@ -179,6 +175,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefe
 }
 
 bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,function<void(bool, string &, double)> callback) {
+    queue_size += prefetch_tasks.size();
     for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
         if (iter->key == key) {
             prediction_hit++;
@@ -332,6 +329,7 @@ int main(int argc, char *argv[])
                     cout << sum / latencies.size() << "," << latencies.size() << endl;
 //                    cout << "Prediction hits: " << prediction_hit << endl;
 //                    cout << "Prefetch hits: " << prefetch_hit << endl;
+                    cout << "Average queue size: " << queue_size / latencies.size() << endl;
                     latencies.clear();
                     prediction_hit = 0;
                     prefetch_hit = 0;
