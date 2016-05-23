@@ -52,6 +52,8 @@ static vector<thread> clients;
 static atomic<int> num_clients(0);
 static bool reported = true;
 static double read_perc = 1;
+static double prediction_hit = 0;
+static double prefetch_hit = 0;
 
 void quit_server(int) {
     cout << endl << "Receives CTRL-C, quiting..." << endl;
@@ -179,8 +181,10 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefe
 bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,function<void(bool, string &, double)> callback) {
     for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
         if (iter->key == key) {
+            prediction_hit++;
             if (iter->task_state == finished) {
                 val = iter->val;
+                prefetch_hit++;
             } else {
                 iter->birth_time = std::chrono::high_resolution_clock::now();
                 iter->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
@@ -326,7 +330,11 @@ int main(int argc, char *argv[])
                         sum += latency;
                     }
                     cout << sum / latencies.size() << "," << latencies.size() << endl;
+                    cout << "Prediction hits: " << prediction_hit << endl;
+                    cout << "Prefetch hits: " << prefetch_hit << endl;
                     latencies.clear();
+                    prediction_hit = 0;
+                    prefetch_hit = 0;
                     reported = true;
                     if (num_exp > 0) {
                         ++count;
