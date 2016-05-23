@@ -23,6 +23,7 @@ fakeDB::fakeDB(string dir, uint32_t num_prefetch_in) : num_prefetch(num_prefetch
     if (dir[dir.size() - 1] != '/') {
         dir += '/';
     }
+    dir += "glakv.db";
     int db_file = open(dir.c_str(), O_RDONLY);
     assert(db_file > 0);
     read(db_file, &(fakeDB::db_size), sizeof(uint32_t));
