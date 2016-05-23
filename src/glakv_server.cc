@@ -182,6 +182,7 @@ bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,
             if (iter->task_state == finished) {
                 val = iter->val;
             } else {
+                iter->birth_time = std::chrono::high_resolution_clock::now();
                 iter->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
                     callback(success, value, time);
                     prefetch_tasks.erase(iter);
@@ -236,8 +237,8 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             string value;
             auto start = std::chrono::high_resolution_clock::now();
             if (check_prefetch_cache(key, prefetch_tasks, value, get_callback)) {
-                prefetch_for_key(db, pool, key, prefetch_tasks);
                 auto diff = std::chrono::high_resolution_clock::now() - start;
+                prefetch_for_key(db, pool, key, prefetch_tasks);
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
                 res[0] = 1;
