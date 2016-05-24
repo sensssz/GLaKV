@@ -13,7 +13,7 @@ using std::endl;
 using std::string;
 using std::chrono::microseconds;
 
-worker_thread::worker_thread(ConcurrentQueue<task> &queue, DB &db_in)
+worker_thread::worker_thread(ConcurrentQueue<task *> &queue, DB &db_in)
         : task_queue(queue), quit(false), db(db_in) {}
 
 worker_thread::worker_thread(worker_thread &&other)
@@ -22,36 +22,36 @@ worker_thread::worker_thread(worker_thread &&other)
 
 void worker_thread::start() {
     worker = thread([this] {
-        task db_task;
+        task *db_task = nullptr;
         while (!quit) {
             if (!task_queue.try_dequeue(db_task)) {
                 std::this_thread::sleep_for(microseconds(2));
                 continue;
             }
-            db_task.task_state = processing;
+            db_task->task_state = processing;
             bool success = true;
-            switch (db_task.operation) {
+            switch (db_task->operation) {
                 case get:
-                    success = db.get(db_task.key, db_task.val);
+                    success = db.get(db_task->key, db_task->val);
                     break;
                 case put:
-                    db.put(db_task.key, db_task.val);
+                    db.put(db_task->key, db_task->val);
                     break;
                 case del:
-                    db.del(db_task.key);
+                    db.del(db_task->key);
                     break;
                 case fetch:
-                    success = db.get(db_task.key, db_task.val);
+                    success = db.get(db_task->key, db_task->val);
                     break;
                 case noop:
                     break;
                 default:
                     break;
             }
-            db_task.task_state = finished;
+            db_task->task_state = finished;
             auto end = std::chrono::high_resolution_clock::now();
-            auto diff = std::chrono::duration_cast<microseconds>(end - db_task.birth_time);
-            db_task.callback(success, db_task.val, diff.count());
+            auto diff = std::chrono::duration_cast<microseconds>(end - db_task->birth_time);
+            db_task->callback(success, db_task->val, diff.count());
         }
     });
 }

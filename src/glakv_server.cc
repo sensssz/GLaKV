@@ -158,19 +158,19 @@ uint64_t get_uint64(char *buf) {
     return *((uint64_t *) buf);
 }
 
-void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefetch_tasks) {
+void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &prefetch_tasks) {
     if (prefetch) {
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
-            prefetch_tasks.push_back({fetch, prediction, [] (bool, string &, double) {}});
-            task &db_task = prefetch_tasks.back();
-            pool.submit_task_ref(db_task);
+            task *db_task = new task(fetch, prediction, [] (bool, string &, double) {});
+            prefetch_tasks.push_back(db_task);
+            pool.submit_task(db_task);
         }
     }
 }
 
 bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock,
-                        uint32_t key, list<task> &prefetch_tasks, string &val) {
+                        uint32_t key, list<task *> &prefetch_tasks, string &val) {
     cout << "Queue size is " << prefetch_tasks.size() << endl;
     auto callback = [&key, &db, &sockfd, &prefetch_tasks, &latencies, &lock, &pool] (bool success, string &value, double time) {
         char res[BUF_LEN];
@@ -199,68 +199,54 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     bool prediction_success = false;
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
-        if (iter->key == key) {
+        if ((*iter)->key == key) {
             prediction_success = true;
             prediction_hit++;
-            if (iter->task_state == finished) {
+            if ((*iter)->task_state == finished) {
                 prefetch_success = true;
-                val = iter->val;
+                val = (*iter)->val;
                 prefetch_hit++;
+                delete *iter;
                 iter = prefetch_tasks.erase(iter);
             } else {
-                iter->callback = [&prefetch_tasks, &iter, &key, &db, &sockfd,
-                                  &latencies, &lock, &pool] (bool success, string &value, double time) {
+                (*iter)->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
+                    delete *iter;
                     prefetch_tasks.erase(iter);
-                    char res[BUF_LEN];
-                    uint64_t res_len = 0;
-                    if (success) {
-                        res[0] = 1;
-                        store_uint64(res + 1, value.size());
-                        memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
-                        res_len = 1 + INT_LEN + value.size();
-                        prefetch_for_key(db, pool, key, prefetch_tasks);
-                    } else {
-                        res[0] = 0;
-                        res_len = 1;
-                    }
-                    if (write(sockfd, res, res_len) != (ssize_t) res_len) {
-                        cerr << "Error sending result to client" << endl;
-                        return;
-                    }
-                    lock.lock();
-                    latencies.push_back(time);
-                    lock.unlock();
-                    cout << "Response sent back to client" << endl;
+                    callback(success, value, time);
                 };
-                iter->birth_time = std::chrono::high_resolution_clock::now();
+                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
                 ++iter;
                 cout << "Promote prefetch as get" << endl;
             }
-        } else if (iter->task_state == in_queue) {
-            iter->operation = noop;
-            iter->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
+        } else if ((*iter)->task_state == in_queue) {
+            (*iter)->operation = noop;
+            (*iter)->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
+                delete *iter;
                 prefetch_tasks.erase(iter);
             };
             ++iter;
-        } else if (iter->task_state == processing) {
-            iter->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
+        } else if ((*iter)->task_state == processing) {
+            (*iter)->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
+                delete *iter;
                 prefetch_tasks.erase(iter);
             };
             ++iter;
         } else {
+            delete *iter;
             iter = prefetch_tasks.erase(iter);
         }
     }
     if (!prediction_success) {
         cout << "Prediction is not successful; submit task." << endl;
-        pool.submit_task({get, key, std::move(callback)});
+        task *db_task = new task(get, key, std::move(callback));
+        pool.submit_task(db_task);
     }
     cout << "Prefetch is " << (prefetch_success ? "" : "not") << " successful" << endl;
     return prefetch_success;
 }
 
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
-    list<task> prefetch_tasks;
+    list<task *> prefetch_tasks;
     reported = false;
     char buffer[BUF_LEN];
     uint32_t key;
@@ -298,7 +284,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             uint64_t vlen = get_uint64(buffer + PUT_LEN + KEY_LEN);
             char *val_buf = buffer + PUT_LEN + KEY_LEN + INT_LEN;
             string value(val_buf, vlen);
-            pool.submit_task({put, key, value, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
+            task *db_task = new task(put, key, value, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
                 if (write(sockfd, &success, 1) != 1) {
                     cerr << "Error sending result to client" << endl;
                     return;
@@ -306,10 +292,11 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 lock.lock();
                 latencies.push_back(time);
                 lock.unlock();
-            }});
+            });
+            pool.submit_task(db_task);
         } else if (strncmp(DEL, buffer, DEL_LEN) == 0) {
             key = get_uint32(buffer + DEL_LEN);
-            pool.submit_task({del, key, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
+            task *db_task = new task(del, key, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
                 if (write(sockfd, &success, 1) != 1) {
                     cerr << "Error sending result to client" << endl;
                     return;
@@ -317,7 +304,8 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 lock.lock();
                 latencies.push_back(time);
                 lock.unlock();
-            }});
+            });
+            pool.submit_task(db_task);
         } else if (strncmp(QUIT, buffer, QUIT_LEN) == 0) {
             break;
         }

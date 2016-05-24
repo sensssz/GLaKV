@@ -20,12 +20,12 @@ using moodycamel::ConcurrentQueue;
 
 class worker_thread {
 private:
-    ConcurrentQueue<task> &task_queue;
+    ConcurrentQueue<task *> &task_queue;
     thread worker;
     bool quit;
     DB &db;
 public:
-    worker_thread(ConcurrentQueue<task> &queue, DB &db);
+    worker_thread(ConcurrentQueue<task *> &queue, DB &db);
     worker_thread(worker_thread &&other);
     void start();
     void set_stop();
