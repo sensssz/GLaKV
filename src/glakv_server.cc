@@ -165,10 +165,6 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefe
             prefetch_tasks.push_back({fetch, prediction, [] (bool, string &, double) {}});
             task &db_task = prefetch_tasks.back();
             pool.submit_task_ref(db_task);
-            auto iter = --(prefetch_tasks.end());
-            db_task.callback = [&prefetch_tasks, &iter] (bool, string &, double) {
-                prefetch_tasks.erase(iter);
-            };
         }
     }
 }
@@ -181,6 +177,8 @@ bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,
             if (iter->task_state == finished) {
                 val = iter->val;
                 prefetch_hit++;
+                iter = prefetch_tasks.erase(iter);
+                --iter;
             } else {
                 iter->birth_time = std::chrono::high_resolution_clock::now();
                 iter->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
@@ -191,6 +189,16 @@ bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,
             return true;
         } else if (iter->task_state == in_queue) {
             iter->operation = noop;
+            iter->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
+                prefetch_tasks.erase(iter);
+            };
+        } else if (iter->task_state == processing) {
+            iter->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
+                prefetch_tasks.erase(iter);
+            };
+        } else {
+            iter = prefetch_tasks.erase(iter);
+            --iter;
         }
     }
     return false;
