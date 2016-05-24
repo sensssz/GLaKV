@@ -171,7 +171,6 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
 
 bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock,
                         uint32_t key, list<task *> &prefetch_tasks, string &val) {
-    cout << "Queue size is " << prefetch_tasks.size() << endl;
     auto callback = [&key, &db, &sockfd, &prefetch_tasks, &latencies, &lock, &pool] (bool success, string &value, double time) {
         char res[BUF_LEN];
         uint64_t res_len = 0;
@@ -192,7 +191,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         lock.lock();
         latencies.push_back(time);
         lock.unlock();
-        cout << "Response sent back to client" << endl;
+//        cout << "Response sent back to client" << endl;
     };
     queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
@@ -216,7 +215,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 };
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
                 ++iter;
-                cout << "Promote prefetch as get" << endl;
+//                cout << "Promote prefetch as get" << endl;
             }
         } else if ((*iter)->task_state == in_queue) {
             (*iter)->operation = noop;
@@ -237,11 +236,11 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         }
     }
     if (!prediction_success) {
-        cout << "Prediction is not successful; submit task." << endl;
+//        cout << "Prediction is not successful; submit task." << endl;
         task *db_task = new task(get, key, std::move(callback));
         pool.submit_task(db_task);
     }
-    cout << "Prefetch is " << (prefetch_success ? "" : "not") << " successful" << endl;
+//    cout << "Prefetch is " << (prefetch_success ? "" : "not") << " successful" << endl;
     return prefetch_success;
 }
 
@@ -355,9 +354,9 @@ int main(int argc, char *argv[])
                         sum += latency;
                     }
                     cout << sum / latencies.size() << "," << latencies.size() << endl;
-//                    cout << "Prediction hits: " << prediction_hit << endl;
-//                    cout << "Prefetch hits: " << prefetch_hit << endl;
-//                    cout << "Average queue size: " << queue_size / latencies.size() << endl;
+                    cout << "Prediction hits: " << prediction_hit << endl;
+                    cout << "Prefetch hits: " << prefetch_hit << endl;
+                    cout << "Average queue size: " << queue_size / latencies.size() << endl;
                     latencies.clear();
                     prediction_hit = 0;
                     prefetch_hit = 0;
