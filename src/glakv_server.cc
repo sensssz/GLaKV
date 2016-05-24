@@ -199,7 +199,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
 //    cout << "Queue size is " << prefetch_tasks.size() << endl;
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
-        unique_lock task_lock((*iter)->task_mutex);
+        unique_lock<mutex> task_lock((*iter)->task_mutex);
         if ((*iter)->key == key) {
             prediction_success = true;
             prediction_hit++;

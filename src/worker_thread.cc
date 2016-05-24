@@ -30,7 +30,7 @@ void worker_thread::start() {
                 std::this_thread::sleep_for(microseconds(2));
                 continue;
             }
-            unique_lock lock(db_task->task_mutex);
+            unique_lock<mutex> lock(db_task->task_mutex);
             db_task->task_state = processing;
             bool success = true;
             switch (db_task->operation) {
