@@ -158,19 +158,21 @@ uint64_t get_uint64(char *buf) {
     return *((uint64_t *) buf);
 }
 
-void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &prefetch_tasks) {
+void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &prefetch_tasks, mutex &prefetch_mutex) {
     if (prefetch) {
+        unique_lock<mutex> lock(prefetch_mutex);
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
             task *db_task = new task(fetch, prediction, [] (bool, string &, double) {});
             prefetch_tasks.push_back(db_task);
             pool.submit_task(db_task);
         }
+        lock.unlock();
     }
 }
 
 bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock,
-                        uint32_t key, list<task *> &prefetch_tasks, string &val) {
+                        uint32_t key, list<task *> &prefetch_tasks, mutex &prefetch_mutex, string &val) {
     auto callback = [&key, &db, &sockfd, &prefetch_tasks, &latencies, &lock, &pool] (bool success, string &value, double time) {
         char res[BUF_LEN];
         uint64_t res_len = 0;
@@ -179,7 +181,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             store_uint64(res + 1, value.size());
             memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
             res_len = 1 + INT_LEN + value.size();
-            prefetch_for_key(db, pool, key, prefetch_tasks);
+            prefetch_for_key(db, pool, key, prefetch_tasks, prefetch_mutex);
         } else {
             res[0] = 0;
             res_len = 1;
@@ -195,6 +197,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
+    unique_lock<mutex> prefetch_lock(prefetch_mutex);
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
         if ((*iter)->key == key) {
@@ -218,6 +221,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             iter++;
         }
     }
+    prefetch_lock.unlock();
     if (!prediction_success) {
         task *db_task = new task(get, key, std::move(callback));
         pool.submit_task(db_task);
@@ -227,6 +231,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
 
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
     list<task *> prefetch_tasks;
+    mutex prefetch_mutex;
     reported = false;
     char buffer[BUF_LEN];
     uint32_t key;
@@ -244,10 +249,10 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             key = get_uint32(buffer + GET_LEN);
             string val;
             auto start = std::chrono::high_resolution_clock::now();
-            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, key, prefetch_tasks, val)) {
+            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, key, prefetch_tasks, prefetch_mutex, val)) {
                 auto diff = std::chrono::high_resolution_clock::now() - start;
                 double time = diff.count();
-                prefetch_for_key(db, pool, key, prefetch_tasks);
+                prefetch_for_key(db, pool, key, prefetch_tasks, prefetch_mutex);
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
                 res[0] = 1;
