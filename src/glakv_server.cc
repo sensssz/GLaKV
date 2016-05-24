@@ -210,25 +210,27 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 iter = prefetch_tasks.erase(iter);
             } else {
                 (*iter)->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
-                    delete *iter;
-                    prefetch_tasks.erase(iter);
                     callback(success, value, time);
+                    task *db_task = *iter;
+                    prefetch_tasks.erase(iter);
+                    delete db_task;
                 };
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
                 ++iter;
-//                cout << "Promote prefetch as get" << endl;
             }
         } else if ((*iter)->task_state == in_queue) {
             (*iter)->operation = noop;
             (*iter)->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
-                delete *iter;
+                task *db_task = *iter;
                 prefetch_tasks.erase(iter);
+                delete db_task;
             };
             ++iter;
         } else if ((*iter)->task_state == processing) {
             (*iter)->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
-                delete *iter;
+                task *db_task = *iter;
                 prefetch_tasks.erase(iter);
+                delete db_task;
             };
             ++iter;
         } else {
@@ -238,11 +240,9 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         task_lock.unlock();
     }
     if (!prediction_success) {
-//        cout << "Prediction is not successful; submit task." << endl;
         task *db_task = new task(get, key, std::move(callback));
         pool.submit_task(db_task);
     }
-//    cout << "Prefetch is " << (prefetch_success ? "" : "not") << " successful" << endl;
     return prefetch_success;
 }
 
