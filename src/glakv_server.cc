@@ -169,12 +169,17 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefe
     }
 }
 
-bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,function<void(bool, string &, double)> callback) {
+bool check_prefetch_cache(uint32_t key, thread_pool &pool, list<task> &prefetch_tasks,
+                          string &val, function<void(bool, string &, double)> callback) {
     queue_size += prefetch_tasks.size();
+    bool prefetch_success = false;
+    bool prediction_success = false;
     for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
         if (iter->key == key) {
+            prediction_success = true;
             prediction_hit++;
             if (iter->task_state == finished) {
+                prefetch_success = true;
                 val = iter->val;
                 prefetch_hit++;
                 iter = prefetch_tasks.erase(iter);
@@ -186,7 +191,6 @@ bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,
                     prefetch_tasks.erase(iter);
                 };
             }
-            return true;
         } else if (iter->task_state == in_queue) {
             iter->operation = noop;
             iter->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
@@ -201,7 +205,10 @@ bool check_prefetch_cache(uint32_t key, list<task> &prefetch_tasks, string &val,
             --iter;
         }
     }
-    return false;
+    if (!prediction_success) {
+        pool.submit_task({get, key, std::move(callback)});
+    }
+    return prefetch_success;
 }
 
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
@@ -244,7 +251,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             };
             string value;
             auto start = std::chrono::high_resolution_clock::now();
-            if (check_prefetch_cache(key, prefetch_tasks, value, get_callback)) {
+            if (check_prefetch_cache(key, pool, prefetch_tasks, value, get_callback)) {
                 auto diff = std::chrono::high_resolution_clock::now() - start;
                 prefetch_for_key(db, pool, key, prefetch_tasks);
                 char res[BUF_LEN];
@@ -257,9 +264,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 lock.lock();
                 latencies.push_back(diff.count());
                 lock.unlock();
-                continue;
             }
-            pool.submit_task({get, key, std::move(get_callback)});
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
             key = get_uint32(buffer + PUT_LEN);
             uint64_t vlen = get_uint64(buffer + PUT_LEN + KEY_LEN);
