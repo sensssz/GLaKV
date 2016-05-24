@@ -171,6 +171,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefe
 
 bool check_prefetch_cache(uint32_t key, thread_pool &pool, list<task> &prefetch_tasks,
                           string &val, function<void(bool, string &, double)> callback) {
+    cout << "Queue size is " << prefetch_tasks.size() << endl;
     queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
@@ -210,6 +211,7 @@ bool check_prefetch_cache(uint32_t key, thread_pool &pool, list<task> &prefetch_
     if (!prediction_success) {
         pool.submit_task({get, key, std::move(callback)});
     }
+    cout << "Prefetch is " << (prefetch_success ? "" : " not ") << " successful" << endl;
     return prefetch_success;
 }
 
