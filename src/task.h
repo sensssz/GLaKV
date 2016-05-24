@@ -9,9 +9,11 @@
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <mutex>
 
 using std::function;
 using std::string;
+using std::mutex;
 
 enum opcode {get, put, del, fetch, noop};
 enum state {in_queue, processing, finished};
@@ -21,6 +23,7 @@ struct task {
     uint32_t    key;
     string      val;
     state       task_state;
+    mutex       task_mutex;
     std::chrono::high_resolution_clock::time_point  birth_time;
     function<void(bool, string&, double)> callback;
 

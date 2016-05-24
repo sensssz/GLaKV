@@ -198,6 +198,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     bool prediction_success = false;
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
+        unique_lock task_lock((*iter)->task_mutex);
         if ((*iter)->key == key) {
             prediction_success = true;
             prediction_hit++;
@@ -234,6 +235,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             delete *iter;
             iter = prefetch_tasks.erase(iter);
         }
+        task_lock.unlock();
     }
     if (!prediction_success) {
 //        cout << "Prediction is not successful; submit task." << endl;

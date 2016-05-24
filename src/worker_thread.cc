@@ -7,10 +7,12 @@
 #include <string>
 #include <chrono>
 #include <iostream>
+#include <mutex>
 
 using std::cout;
 using std::endl;
 using std::string;
+using std::unique_lock;
 using std::chrono::microseconds;
 
 worker_thread::worker_thread(ConcurrentQueue<task *> &queue, DB &db_in)
@@ -28,6 +30,7 @@ void worker_thread::start() {
                 std::this_thread::sleep_for(microseconds(2));
                 continue;
             }
+            unique_lock lock(db_task->task_mutex);
             db_task->task_state = processing;
             bool success = true;
             switch (db_task->operation) {
