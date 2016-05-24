@@ -208,9 +208,29 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 prefetch_hit++;
                 iter = prefetch_tasks.erase(iter);
             } else {
-                iter->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
-                    callback(success, value, time);
+                iter->callback = [&prefetch_tasks, &iter, &key, &db, &sockfd,
+                        &prefetch_tasks, &latencies, &lock, &pool] (bool success, string &value, double time) {
                     prefetch_tasks.erase(iter);
+                    char res[BUF_LEN];
+                    uint64_t res_len = 0;
+                    if (success) {
+                        res[0] = 1;
+                        store_uint64(res + 1, value.size());
+                        memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
+                        res_len = 1 + INT_LEN + value.size();
+                        prefetch_for_key(db, pool, key, prefetch_tasks);
+                    } else {
+                        res[0] = 0;
+                        res_len = 1;
+                    }
+                    if (write(sockfd, res, res_len) != (ssize_t) res_len) {
+                        cerr << "Error sending result to client" << endl;
+                        return;
+                    }
+                    lock.lock();
+                    latencies.push_back(time);
+                    lock.unlock();
+                    cout << "Response sent back to client" << endl;
                 };
                 iter->birth_time = std::chrono::high_resolution_clock::now();
                 ++iter;
