@@ -191,27 +191,25 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         lock.lock();
         latencies.push_back(time);
         lock.unlock();
-//        cout << "Sending result back to client" << endl;
     };
     queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
-//    cout << "Queue size is " << prefetch_tasks.size() << endl;
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
-        unique_lock<mutex> task_lock((*iter)->task_mutex);
         if ((*iter)->key == key) {
             prediction_success = true;
             prediction_hit++;
+            unique_lock<mutex> task_lock((*iter)->task_mutex);
             if ((*iter)->task_state == finished) {
                 prefetch_success = true;
                 val = (*iter)->val;
                 prefetch_hit++;
             } else {
-//                cout << "Promoting fetch to get" << endl;
                 (*iter)->callback = callback;
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
             }
+            task_lock.unlock();
         }
         if ((*iter)->task_state == finished) {
             delete *iter;
@@ -219,10 +217,8 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         } else {
             iter++;
         }
-        task_lock.unlock();
     }
     if (!prediction_success) {
-//        cout << "Prediction failed. Submit the task." << endl;
         task *db_task = new task(get, key, std::move(callback));
         pool.submit_task(db_task);
     }
@@ -295,9 +291,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         }
     }
     --num_clients;
-//    for (auto db_task : prefetch_tasks) {
-//        delete db_task;
-//    }
+    for (auto db_task : prefetch_tasks) {
+        delete db_task;
+    }
     close(sockfd);
 }
 
