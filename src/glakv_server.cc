@@ -173,7 +173,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
 
 bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock,
                         uint32_t key, list<task *> &prefetch_tasks, mutex &prefetch_mutex, string &val) {
-    auto callback = [&key, &db, &sockfd, &prefetch_tasks, &prefetch_mutex, &latencies, &lock, &pool] (bool success, string &value, double time) {
+    auto callback = [&] (bool success, string &value, double time) {
         char res[BUF_LEN];
         uint64_t res_len = 0;
         if (success) {
@@ -200,10 +200,10 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     unique_lock<mutex> prefetch_lock(prefetch_mutex);
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
+        unique_lock<mutex> task_lock((*iter)->task_mutex);
         if ((*iter)->key == key) {
             prediction_success = true;
             prediction_hit++;
-            unique_lock<mutex> task_lock((*iter)->task_mutex);
             if ((*iter)->task_state == finished) {
                 prefetch_success = true;
                 val = (*iter)->val;
@@ -212,7 +212,6 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 (*iter)->callback = callback;
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
             }
-            task_lock.unlock();
         }
         if ((*iter)->task_state == finished) {
             delete *iter;
@@ -220,6 +219,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         } else {
             iter++;
         }
+        task_lock.unlock();
     }
     prefetch_lock.unlock();
     if (!prediction_success) {
@@ -269,7 +269,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             uint64_t vlen = get_uint64(buffer + PUT_LEN + KEY_LEN);
             char *val_buf = buffer + PUT_LEN + KEY_LEN + INT_LEN;
             string value(val_buf, vlen);
-            task *db_task = new task(put, key, value, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
+            task *db_task = new task(put, key, value, [&] (bool success, string &val, double time) {
                 if (write(sockfd, &success, 1) != 1) {
                     cerr << "Error sending result to client" << endl;
                     return;
@@ -281,7 +281,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             pool.submit_task(db_task);
         } else if (strncmp(DEL, buffer, DEL_LEN) == 0) {
             key = get_uint32(buffer + DEL_LEN);
-            task *db_task = new task(del, key, [&sockfd, &latencies, &lock] (bool success, string &val, double time) {
+            task *db_task = new task(del, key, [&] (bool success, string &val, double time) {
                 if (write(sockfd, &success, 1) != 1) {
                     cerr << "Error sending result to client" << endl;
                     return;
