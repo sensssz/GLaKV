@@ -7,6 +7,7 @@ CXXFLAGS = -Wall -Werror -std=c++11 -c $(INCLUDE)
 SERVEROBJS = DBImpl.o fakeDB.o lrucache.o worker_thread.o thread_pool.o glakv_server.o
 CLIENTOBJS = glakv_client.o exponential_distribution.o
 OBJS = $(SERVEROBJS) $(CLIENTOBJS)
+RM = rm -rf
 
 all: release
 
@@ -58,4 +59,5 @@ exp_dist_test.o: exp_dist_test.cc
 	$(CC) $(CXXFLAGS) exp_dist_test.cc -o exp_dist_test.o
 
 clean:
-	rm $(OBJS)
+	$(RM) $(OBJS)
+	$(RM) gmon.out gprof_analysis
