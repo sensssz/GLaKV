@@ -174,7 +174,8 @@ bool check_prefetch_cache(uint32_t key, thread_pool &pool, list<task> &prefetch_
     queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
-    for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
+    auto iter = prefetch_tasks.begin();
+    while (iter != prefetch_tasks.end()) {
         if (iter->key == key) {
             prediction_success = true;
             prediction_hit++;
@@ -183,26 +184,27 @@ bool check_prefetch_cache(uint32_t key, thread_pool &pool, list<task> &prefetch_
                 val = iter->val;
                 prefetch_hit++;
                 iter = prefetch_tasks.erase(iter);
-                --iter;
             } else {
                 iter->birth_time = std::chrono::high_resolution_clock::now();
                 iter->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
                     callback(success, value, time);
                     prefetch_tasks.erase(iter);
                 };
+                ++iter;
             }
         } else if (iter->task_state == in_queue) {
             iter->operation = noop;
             iter->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
                 prefetch_tasks.erase(iter);
             };
+            ++iter;
         } else if (iter->task_state == processing) {
             iter->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
                 prefetch_tasks.erase(iter);
             };
+            ++iter;
         } else {
             iter = prefetch_tasks.erase(iter);
-            --iter;
         }
     }
     if (!prediction_success) {
