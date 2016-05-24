@@ -30,7 +30,6 @@ void worker_thread::start() {
                 std::this_thread::sleep_for(microseconds(2));
                 continue;
             }
-            unique_lock<mutex> lock(db_task->task_mutex);
             db_task->task_state = processing;
             bool success = true;
             switch (db_task->operation) {
@@ -51,11 +50,10 @@ void worker_thread::start() {
                 default:
                     break;
             }
-            db_task->task_state = finished;
             auto end = std::chrono::high_resolution_clock::now();
             auto diff = std::chrono::duration_cast<microseconds>(end - db_task->birth_time);
             db_task->callback(success, db_task->val, diff.count());
-            lock.unlock();
+            db_task->task_state = finished;
         }
     });
 }

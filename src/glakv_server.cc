@@ -191,14 +191,12 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         lock.lock();
         latencies.push_back(time);
         lock.unlock();
-//        cout << "Response sent back to client" << endl;
     };
     queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
-        unique_lock<mutex> task_lock((*iter)->task_mutex);
         if ((*iter)->key == key) {
             prediction_success = true;
             prediction_hit++;
@@ -211,33 +209,14 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             } else {
                 (*iter)->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
                     callback(success, value, time);
-                    task *db_task = *iter;
-                    prefetch_tasks.erase(iter);
-                    delete db_task;
                 };
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
                 ++iter;
             }
-        } else if ((*iter)->task_state == in_queue) {
-            (*iter)->operation = noop;
-            (*iter)->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
-                task *db_task = *iter;
-                prefetch_tasks.erase(iter);
-                delete db_task;
-            };
-            ++iter;
-        } else if ((*iter)->task_state == processing) {
-            (*iter)->callback = [&prefetch_tasks, &iter] (bool, string &, double) {
-                task *db_task = *iter;
-                prefetch_tasks.erase(iter);
-                delete db_task;
-            };
-            ++iter;
-        } else {
+        } else if ((*iter)->task_state == finished) {
             delete *iter;
             iter = prefetch_tasks.erase(iter);
         }
-        task_lock.unlock();
     }
     if (!prediction_success) {
         task *db_task = new task(get, key, std::move(callback));
@@ -312,6 +291,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         }
     }
     --num_clients;
+    for (auto db_task : prefetch_tasks) {
+        delete db_task;
+    }
     close(sockfd);
 }
 
