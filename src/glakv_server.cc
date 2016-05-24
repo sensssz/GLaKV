@@ -199,6 +199,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
 //    cout << "Queue size is " << prefetch_tasks.size() << endl;
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
+        unique_lock task_lock((*iter)->task_mutex);
         if ((*iter)->key == key) {
             prediction_success = true;
             prediction_hit++;
@@ -218,6 +219,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         } else {
             iter++;
         }
+        task_lock.unlock();
     }
     if (!prediction_success) {
 //        cout << "Prediction failed. Submit the task." << endl;
@@ -293,9 +295,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         }
     }
     --num_clients;
-    for (auto db_task : prefetch_tasks) {
-        delete db_task;
-    }
+//    for (auto db_task : prefetch_tasks) {
+//        delete db_task;
+//    }
     close(sockfd);
 }
 
