@@ -209,7 +209,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 iter = prefetch_tasks.erase(iter);
             } else {
                 iter->callback = [&prefetch_tasks, &iter, &key, &db, &sockfd,
-                        &prefetch_tasks, &latencies, &lock, &pool] (bool success, string &value, double time) {
+                                  &latencies, &lock, &pool] (bool success, string &value, double time) {
                     prefetch_tasks.erase(iter);
                     char res[BUF_LEN];
                     uint64_t res_len = 0;
