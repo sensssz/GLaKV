@@ -169,9 +169,31 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task> &prefe
     }
 }
 
-bool check_prefetch_cache(uint32_t key, thread_pool &pool, list<task> &prefetch_tasks,
-                          string &val, function<void(bool, string &, double)> callback) {
+bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock,
+                        uint32_t key, list<task> &prefetch_tasks, string &val) {
     cout << "Queue size is " << prefetch_tasks.size() << endl;
+    auto callback = [&key, &db, &sockfd, &prefetch_tasks, &latencies, &lock, &pool] (bool success, string &value, double time) {
+        char res[BUF_LEN];
+        uint64_t res_len = 0;
+        if (success) {
+            res[0] = 1;
+            store_uint64(res + 1, value.size());
+            memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
+            res_len = 1 + INT_LEN + value.size();
+            prefetch_for_key(db, pool, key, prefetch_tasks);
+        } else {
+            res[0] = 0;
+            res_len = 1;
+        }
+        if (write(sockfd, res, res_len) != (ssize_t) res_len) {
+            cerr << "Error sending result to client" << endl;
+            return;
+        }
+        lock.lock();
+        latencies.push_back(time);
+        lock.unlock();
+        cout << "Response sent back to client" << endl;
+    };
     queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
@@ -186,12 +208,13 @@ bool check_prefetch_cache(uint32_t key, thread_pool &pool, list<task> &prefetch_
                 prefetch_hit++;
                 iter = prefetch_tasks.erase(iter);
             } else {
-                iter->birth_time = std::chrono::high_resolution_clock::now();
                 iter->callback = [&prefetch_tasks, &iter, &callback] (bool success, string &value, double time) {
                     callback(success, value, time);
                     prefetch_tasks.erase(iter);
                 };
+                iter->birth_time = std::chrono::high_resolution_clock::now();
                 ++iter;
+                cout << "Promote prefetch as get" << endl;
             }
         } else if (iter->task_state == in_queue) {
             iter->operation = noop;
@@ -209,9 +232,10 @@ bool check_prefetch_cache(uint32_t key, thread_pool &pool, list<task> &prefetch_
         }
     }
     if (!prediction_success) {
+        cout << "Prediction is not successful; submit task." << endl;
         pool.submit_task({get, key, std::move(callback)});
     }
-    cout << "Prefetch is " << (prefetch_success ? "" : " not ") << " successful" << endl;
+    cout << "Prefetch is " << (prefetch_success ? "" : "not") << " successful" << endl;
     return prefetch_success;
 }
 
@@ -232,41 +256,21 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
-            auto get_callback = [&key, &db, &sockfd, &prefetch_tasks, &latencies, &lock, &pool] (bool success, string &val, double time) {
-                char res[BUF_LEN];
-                uint64_t res_len = 0;
-                if (success) {
-                    res[0] = 1;
-                    store_uint64(res + 1, val.size());
-                    memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
-                    res_len = 1 + INT_LEN + val.size();
-                    prefetch_for_key(db, pool, key, prefetch_tasks);
-                } else {
-                    res[0] = 0;
-                    res_len = 1;
-                }
-                if (write(sockfd, res, res_len) != (ssize_t) res_len) {
-                    cerr << "Error sending result to client" << endl;
-                    return;
-                }
-                lock.lock();
-                latencies.push_back(time);
-                lock.unlock();
-            };
-            string value;
+            string val;
             auto start = std::chrono::high_resolution_clock::now();
-            if (check_prefetch_cache(key, pool, prefetch_tasks, value, get_callback)) {
+            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, key, prefetch_tasks, val)) {
                 auto diff = std::chrono::high_resolution_clock::now() - start;
+                double time = diff.count();
                 prefetch_for_key(db, pool, key, prefetch_tasks);
                 char res[BUF_LEN];
                 uint64_t res_len = 0;
                 res[0] = 1;
-                store_uint64(res + 1, value.size());
-                memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
-                res_len = 1 + INT_LEN + value.size();
+                store_uint64(res + 1, val.size());
+                memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
+                res_len = 1 + INT_LEN + val.size();
                 write(sockfd, res, res_len);
                 lock.lock();
-                latencies.push_back(diff.count());
+                latencies.push_back(time);
                 lock.unlock();
             }
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
