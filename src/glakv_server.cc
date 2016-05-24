@@ -210,12 +210,13 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 cout << "Promoting fetch to get" << endl;
                 (*iter)->callback = callback;
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
-                ++iter;
             }
         }
         if ((*iter)->task_state == finished) {
             delete *iter;
             iter = prefetch_tasks.erase(iter);
+        } else {
+            iter++;
         }
     }
     if (!prediction_success) {
