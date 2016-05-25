@@ -210,12 +210,6 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 (*iter)->callback = callback;
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
             }
-        } else if ((*iter)->task_state == in_queue) {
-            (*iter)->operation = noop;
-            (*iter)->callback = [&] (bool, string &, double) {
-                delete *iter;
-                prefetch_tasks.erase(iter);
-            };
         }
         if ((*iter)->task_state == finished) {
             delete *iter;
