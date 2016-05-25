@@ -181,6 +181,8 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             store_uint64(res + 1, value.size());
             memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
             res_len = 1 + INT_LEN + value.size();
+            cout << "DB size: " << db.size() << endl;
+            cout << "Key: " << key << endl;
             prefetch_for_key(db, pool, key, prefetch_tasks, prefetch_mutex);
         } else {
             res[0] = 0;
