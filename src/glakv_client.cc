@@ -103,9 +103,7 @@ string send_get(int sockfd, uint32_t key) {
     if (read(sockfd, res_buf, BUF_LEN) < 0) {
         error("ERROR receiving result");
     }
-    if(res_buf[0] != 1) {
-        cerr << "ERROR in response" << endl;
-    }
+    assert(res_buf[0] == 1);
     uint64_t vlen = get_uint64(res_buf + 1);
     string val(res_buf + 1 + INT_LEN, vlen);
     return val;
@@ -172,7 +170,7 @@ void execute(uint32_t database_size, int num_exps) {
     uint32_t key = uni_dist(generator);
     for (int count = 0; count < num_exps; ++count) {
         send_get(sockfd, key);
-        if (false) {
+        if (fals) {
             key = uni_dist(generator);
         } else {
             uint32_t next_rank = exp_dist.next();
@@ -185,6 +183,7 @@ void execute(uint32_t database_size, int num_exps) {
     }
     send_quit(sockfd);
     close(sockfd);
+//    cout << "zero rate: " << zero / total << endl;
 }
 
 void run(int num_threads, uint32_t database_size, int num_exps) {
