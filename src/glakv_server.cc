@@ -239,7 +239,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
     while (!quit) {
         bzero(buffer, BUF_LEN);
         cout << std::this_thread::get_id() << " waiting for new command" << endl;
-        if (read(sockfd, buffer, BUF_LEN) < 0) {
+        if (read(sockfd, buffer, BUF_LEN) <= 0) {
             cerr << "Error reading from client" << endl;
             break;
         }
