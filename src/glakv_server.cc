@@ -200,8 +200,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
-    auto iter = prefetch_tasks.begin();
-    while (iter != prefetch_tasks.end()) {
+    for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
         if ((*iter)->key == key) {
             prediction_success = true;
             prediction_hit++;
@@ -219,15 +218,14 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         if ((*iter)->task_state == detached) {
             delete *iter;
             iter = prefetch_tasks.erase(iter);
-        } else {
-            iter++;
+            --iter;
         }
     }
-    for (auto task_iter = tasks.begin(); task_iter != tasks.end(); ++task_iter) {
-        if ((*task_iter)->task_state == detached) {
-            delete (*task_iter);
-            task_iter = tasks.erase(task_iter);
-            --task_iter;
+    for (auto iter = tasks.begin(); iter != tasks.end(); ++iter) {
+        if ((*iter)->task_state == detached) {
+            delete *iter;
+            iter = tasks.erase(iter);
+            --iter;
         }
     }
     if (!prediction_success) {
@@ -319,6 +317,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         delete db_task;
     }
     for (auto db_task : tasks) {
+        if (db_task->task_state != detached) {
+            cout << "State is " << db_task->task_state << endl;
+        }
         assert(db_task->task_state == detached);
         delete db_task;
     }
