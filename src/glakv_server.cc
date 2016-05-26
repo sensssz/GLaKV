@@ -171,7 +171,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
 
 bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock,
                         uint32_t key, list<task *> &prefetch_tasks, mutex &prefetch_mutex, string &val) {
-    auto callback = [key, &sockfd, &db, &pool, &prefetch_tasks, &prefetch_mutex, &latencies, &lock] (bool success, string &value, double time) {
+    auto callback = [key, sockfd, &db, &pool, &prefetch_tasks, &prefetch_mutex, &latencies, &lock] (bool success, string &value, double time) {
         char res[BUF_LEN];
         uint64_t res_len = 0;
         assert(0 <= key && key < db.size());

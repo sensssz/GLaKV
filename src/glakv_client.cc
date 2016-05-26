@@ -178,8 +178,7 @@ void execute(uint32_t database_size, int num_exps) {
                 zero++;
             }
             total++;
-            key = (next_rank + key + database_size / 3) % database_size;
-            assert(0 <= key && key < database_size);
+            key = (next_rank + key + database_size / 3) % database_size;\
         }
     }
     send_quit(sockfd);
