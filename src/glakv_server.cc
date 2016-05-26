@@ -43,6 +43,7 @@ using std::chrono::time_point;
 using std::uniform_int_distribution;
 using std::vector;
 using std::unordered_map;
+using std::chrono::microseconds;
 
 static bool quit = false;
 static bool prefetch = false;
@@ -303,6 +304,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
     }
     --num_clients;
     for (auto db_task : prefetch_tasks) {
+        while (db_task->task_state != finished) {
+            std::this_thread::sleep_for(microseconds(10));
+        }
         delete db_task;
     }
     close(sockfd);
