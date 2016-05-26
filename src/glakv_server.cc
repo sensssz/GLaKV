@@ -170,7 +170,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
     }
 }
 
-bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock,
+bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock, list<task *> &tasks,
                         uint32_t key, list<task *> &prefetch_tasks, mutex &prefetch_mutex, string &val) {
     auto callback = [key, sockfd, &db, &pool, &prefetch_tasks, &prefetch_mutex, &latencies, &lock] (bool success, string &value, double time) {
         char res[BUF_LEN];
@@ -223,8 +223,14 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             iter++;
         }
     }
+    for (auto db_task : tasks) {
+        if (db_task->task_state == detached) {
+            delete db_task;
+        }
+    }
     if (!prediction_success) {
         task *db_task = new task(get, key, std::move(callback));
+        tasks.push_back(db_task);
         pool.submit_task(db_task);
     }
     return prefetch_success;
@@ -232,6 +238,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
 
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
     list<task *> prefetch_tasks;
+    list<task *> tasks;
     mutex prefetch_mutex;
     reported = false;
     char buffer[BUF_LEN];
@@ -251,7 +258,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             assert(0 <= key && key < db.size());
             string val;
             auto start = std::chrono::high_resolution_clock::now();
-            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, key, prefetch_tasks, prefetch_mutex, val)) {
+            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, tasks, key, prefetch_tasks, prefetch_mutex, val)) {
                 auto diff = std::chrono::high_resolution_clock::now() - start;
                 double time = diff.count() / 1000;
                 prefetch_for_key(db, pool, key, prefetch_tasks, prefetch_mutex);
@@ -307,6 +314,10 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         while (db_task->task_state != detached) {
             std::this_thread::sleep_for(microseconds(10));
         }
+        delete db_task;
+    }
+    for (auto db_task : tasks) {
+        assert(db_task->task_state == detached);
         delete db_task;
     }
     close(sockfd);
