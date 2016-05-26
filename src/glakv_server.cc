@@ -247,6 +247,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
+            assert(0 <= key && key < db.size());
             string val;
             auto start = std::chrono::high_resolution_clock::now();
             if (prefetch_or_submit(sockfd, pool, db, latencies, lock, key, prefetch_tasks, prefetch_mutex, val)) {
@@ -260,7 +261,6 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
                 res_len = 1 + INT_LEN + val.size();
 
-                assert(0 <= key && key < db.size());
                 assert(res[0] == 1);
                 assert(val.size() == VAL_LEN);
 
