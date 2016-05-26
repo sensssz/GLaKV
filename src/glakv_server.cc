@@ -268,7 +268,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
 
                 write(sockfd, res, res_len);
                 lock.lock();
-                latencies.push_back(0);
+                latencies.push_back(time);
                 lock.unlock();
             }
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
