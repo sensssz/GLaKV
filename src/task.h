@@ -16,7 +16,7 @@ using std::string;
 using std::mutex;
 
 enum opcode {get, put, del, fetch, noop};
-enum state {in_queue, processing, finished, free};
+enum state {in_queue, processing, finished, detached};
 
 struct task {
     opcode      operation;

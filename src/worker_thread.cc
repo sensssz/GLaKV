@@ -56,7 +56,7 @@ void worker_thread::start() {
             db_task->callback(success, db_task->val, diff.count() / 1000);
             db_task->task_state = finished;
             lock.unlock();
-            db_task->task_state = free;
+            db_task->task_state = detached;
         }
     });
 }
