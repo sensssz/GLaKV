@@ -20,7 +20,7 @@ ssh salat3 "rm ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 
 for t in 10 20 30;
 do
-    for m in 0.15 0.2 0.25;
+    for m in 0.1 0.15 0.2;
     do
         for((c=1;c<=32;c*=2));
         do
