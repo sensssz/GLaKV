@@ -173,6 +173,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                         uint32_t key, list<task *> &prefetch_tasks, mutex &prefetch_mutex, string &val) {
     auto callback = [key, sockfd, &db, &pool, &prefetch_tasks, &prefetch_mutex, &latencies, &lock] (bool success, string &value, double time) {
         char res[BUF_LEN];
+        memset(res, 0, BUF_LEN);
         uint64_t res_len = 0;
         assert(0 <= key && key < db.size());
         assert(value.size() == VAL_LEN);
@@ -254,6 +255,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 double time = diff.count();
                 prefetch_for_key(db, pool, key, prefetch_tasks, prefetch_mutex);
                 char res[BUF_LEN];
+                memset(res, 0, BUF_LEN);
                 uint64_t res_len = 0;
                 res[0] = 1;
                 store_uint64(res + 1, val.size());
