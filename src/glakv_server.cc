@@ -186,7 +186,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             res_len = 1;
         }
         assert(res[0] == 1);
-        assert(0 <= key && key <= db.size());
+        assert(0 <= key && key < db.size());
         if (write(sockfd, res, res_len) != (ssize_t) res_len) {
             cerr << "Error sending result to client" << endl;
             return;
@@ -246,6 +246,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
             key = get_uint32(buffer + GET_LEN);
+            assert(0 <= key && key < db.size());
             string val;
             auto start = std::chrono::high_resolution_clock::now();
             if (prefetch_or_submit(sockfd, pool, db, latencies, lock, key, prefetch_tasks, prefetch_mutex, val)) {
