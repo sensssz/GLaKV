@@ -22,8 +22,6 @@ const int GET_TIME = 200;
 const int PUT_TIME = 150;
 const int DEL_TIME = 100;
 
-int num_ops = 0;
-
 fakeDB::fakeDB(string dir, uint32_t num_prefetch_in) : num_prefetch(num_prefetch_in) {
     if (dir[dir.size() - 1] != '/') {
         dir += '/';
@@ -39,11 +37,6 @@ bool fakeDB::get(uint32_t key, string &val) {
     std::this_thread::sleep_for(microseconds(GET_TIME + num_prefetch * CONTENTION));
     char value[VAL_LEN];
     val = string(value, VAL_LEN);
-    ++num_ops;
-    if (num_ops == 100) {
-        cout << "100 done" << endl;
-        num_ops = 0;
-    }
     return true;
 }
 
