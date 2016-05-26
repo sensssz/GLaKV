@@ -304,7 +304,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
     }
     --num_clients;
     for (auto db_task : prefetch_tasks) {
-        while (db_task->task_state != finished) {
+        while (db_task->task_state != detached) {
             std::this_thread::sleep_for(microseconds(10));
         }
         delete db_task;
