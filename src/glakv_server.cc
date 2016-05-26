@@ -317,10 +317,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         delete db_task;
     }
     for (auto db_task : tasks) {
-        if (db_task->task_state != detached) {
-            cout << "State is " << db_task->task_state << endl;
+        while (db_task->task_state != detached) {
+            std::this_thread::sleep_for(microseconds(10));
         }
-        assert(db_task->task_state == detached);
         delete db_task;
     }
     close(sockfd);
