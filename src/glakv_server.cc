@@ -206,7 +206,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             prediction_success = true;
             prediction_hit++;
             unique_lock<mutex> task_lock((*iter)->task_mutex);
-            if ((*iter)->task_state == finished) {
+            if ((*iter)->task_state == finished || (*iter)->task_state == detached) {
                 prefetch_success = true;
                 val = (*iter)->val;
                 prefetch_hit++;
