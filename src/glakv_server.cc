@@ -174,6 +174,8 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     auto callback = [&] (bool success, string &value, double time) {
         char res[BUF_LEN];
         uint64_t res_len = 0;
+        assert(0 <= key && key < db.size());
+        assert(value.size() == VAL_LEN);
         if (success) {
             res[0] = 1;
             store_uint64(res + 1, value.size());
@@ -186,8 +188,6 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             res_len = 1;
         }
         assert(res[0] == 1);
-        assert(0 <= key && key < db.size());
-        assert(value.size() == VAL_LEN);
         if (write(sockfd, res, res_len) != (ssize_t) res_len) {
             cerr << "Error sending result to client" << endl;
             return;
