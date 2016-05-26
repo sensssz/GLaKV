@@ -97,10 +97,11 @@ string send_get(int sockfd, uint32_t key) {
     memcpy(cmd_buf, GET, GET_LEN);
     store_uint32(cmd_buf + GET_LEN, key);
     size_t len = GET_LEN + KEY_LEN;
+    cout << "Sending commands" << endl;
     if (write(sockfd, cmd_buf, len) != (ssize_t) len) {
         error("ERROR sending command");
     }
-    cout << "Waiting response" << endl;
+    cout << "Commands sent, waiting for response" << endl;
     if (read(sockfd, res_buf, BUF_LEN) < 0) {
         error("ERROR receiving result");
     }
