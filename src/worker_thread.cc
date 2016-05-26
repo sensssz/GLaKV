@@ -27,7 +27,7 @@ void worker_thread::start() {
         task *db_task = nullptr;
         while (!quit) {
             if (!task_queue.try_dequeue(db_task)) {
-                std::this_thread::sleep_for(microseconds(2));
+                std::this_thread::sleep_for(microseconds(10));
                 continue;
             }
             unique_lock<mutex> lock(db_task->task_mutex);
