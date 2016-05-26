@@ -216,7 +216,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             }
             task_lock.unlock();
         }
-        if ((*iter)->task_state == finished) {
+        if ((*iter)->task_state == free) {
             delete *iter;
             iter = prefetch_tasks.erase(iter);
         } else {
