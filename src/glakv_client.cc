@@ -100,11 +100,9 @@ string send_get(int sockfd, uint32_t key) {
     if (write(sockfd, cmd_buf, len) != (ssize_t) len) {
         error("ERROR sending command");
     }
-    cout << "Commands sent, waiting for response" << endl;
     if (read(sockfd, res_buf, BUF_LEN) < 0) {
         error("ERROR receiving result");
     }
-    cout << "Response retrieved " << rand() << endl;
     assert(res_buf[0] == 1);
     uint64_t vlen = get_uint64(res_buf + 1);
     string val(res_buf + 1 + INT_LEN, vlen);
