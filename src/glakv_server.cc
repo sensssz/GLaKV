@@ -203,9 +203,9 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
         if ((*iter)->key == key) {
-            unique_lock<mutex> task_lock((*iter)->task_mutex);
             prediction_success = true;
             prediction_hit++;
+            unique_lock<mutex> task_lock((*iter)->task_mutex);
             if ((*iter)->task_state == finished) {
                 prefetch_success = true;
                 val = (*iter)->val;
@@ -250,10 +250,10 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             key = get_uint32(buffer + GET_LEN);
             assert(0 <= key && key < db.size());
             string val;
-//            auto start = std::chrono::high_resolution_clock::now();
+            auto start = std::chrono::high_resolution_clock::now();
             if (prefetch_or_submit(sockfd, pool, db, latencies, lock, key, prefetch_tasks, prefetch_mutex, val)) {
-//                auto diff = std::chrono::high_resolution_clock::now() - start;
-//                double time = diff.count();
+                auto diff = std::chrono::high_resolution_clock::now() - start;
+                double time = diff.count() / 1000;
                 prefetch_for_key(db, pool, key, prefetch_tasks, prefetch_mutex);
                 char res[BUF_LEN];
                 memset(res, 0, BUF_LEN);
