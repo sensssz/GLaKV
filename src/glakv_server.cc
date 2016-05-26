@@ -242,6 +242,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             cerr << "Error reading from client" << endl;
             break;
         }
+        cout << "New Command " << rand() << endl;
         size_t GET_LEN = strlen(GET);
         size_t PUT_LEN = strlen(PUT);
         size_t DEL_LEN = strlen(DEL);
