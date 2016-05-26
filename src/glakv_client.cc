@@ -128,11 +128,8 @@ void send_put(int sockfd, uint32_t key, const char *val_buf, uint64_t vlen) {
 }
 
 void send_quit(int sockfd) {
-    cout << "Sending quit" << endl;
     write(sockfd, QUIT, strlen(QUIT));
-    cout << "quit sent, closing socket" << endl;
     close(sockfd);
-    cout << "Socket closed" << endl;
 }
 
 void load_data(uint32_t db_size) {
