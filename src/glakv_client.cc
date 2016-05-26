@@ -131,7 +131,9 @@ void send_put(int sockfd, uint32_t key, const char *val_buf, uint64_t vlen) {
 }
 
 void send_quit(int sockfd) {
+    cout << "Sending quit" << endl;
     write(sockfd, QUIT, strlen(QUIT));
+    cout << "quit sent" << endl;
     close(sockfd);
 }
 
@@ -185,7 +187,6 @@ void execute(uint32_t database_size, int num_exps) {
         }
     }
     send_quit(sockfd);
-    close(sockfd);
 //    cout << "zero rate: " << zero / total << endl;
 }
 
