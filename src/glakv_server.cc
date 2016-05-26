@@ -185,6 +185,8 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             res[0] = 0;
             res_len = 1;
         }
+        assert(res[0] == 1);
+        assert(0 <= key && key <= db.size());
         if (write(sockfd, res, res_len) != (ssize_t) res_len) {
             cerr << "Error sending result to client" << endl;
             return;
