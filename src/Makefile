@@ -1,7 +1,15 @@
-CUSTOM_USR = /home/jiamin/usr
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+    CUSTOM_USR = /home/jiamin/usr
+    LIBS = -lboost_thread
+endif
+ifeq ($(UNAME_S),Darwin)
+    CUSTOM_USR = /usr/local/Cellar/boost/1.60.0_2
+    LIBS = -lboost_thread-mt
+endif
+
 SRC = .
 INCLUDE = -I$(CUSTOM_USR)/include -I$(SRC)
-LIBS = -lboost_thread
 LDFLAGS = -L$(CUSTOM_USR)/lib $(LIBS)
 CXXFLAGS = -Wall -Werror -std=c++11 -c $(INCLUDE)
 SERVEROBJS = DBImpl.o fakeDB.o lrucache.o worker_thread.o thread_pool.o glakv_server.o
