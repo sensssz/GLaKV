@@ -276,6 +276,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 assert(res_len < BUF_LEN);
 
                 write(sockfd, res, res_len);
+                for (auto byte : val) {
+                    assert(byte == 0x4242);
+                }
                 lock.lock();
                 latencies.push_back(time);
                 lock.unlock();
