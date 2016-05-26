@@ -52,7 +52,7 @@ void worker_thread::start() {
                     break;
             }
             auto end = std::chrono::high_resolution_clock::now();
-            auto diff = std::chrono::duration_cast<microseconds>(end - db_task->birth_time);
+            auto diff = end - db_task->birth_time;
             db_task->callback(success, db_task->val, diff.count());
             lock.unlock();
             db_task->task_state = finished;
