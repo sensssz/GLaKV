@@ -127,7 +127,7 @@ void send_put(int sockfd, uint32_t key, const char *val_buf, uint64_t vlen) {
     }
     assert(res_len == 1 + INT_LEN + VAL_LEN);
     for (ssize_t index = 1 + INT_LEN; index < res_len; ++index) {
-        assert(res_buf[index] == 0x4242);
+        assert(res_buf[index] == 0x42);
     }
     assert(res_buf[0] == 1);
 }

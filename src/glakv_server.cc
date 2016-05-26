@@ -277,7 +277,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
 
                 write(sockfd, res, res_len);
                 for (auto byte : val) {
-                    assert(byte == 0x4242);
+                    assert(byte == 0x42);
                 }
                 lock.lock();
                 latencies.push_back(time);
