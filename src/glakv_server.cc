@@ -201,8 +201,8 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     bool prediction_success = false;
     auto iter = prefetch_tasks.begin();
     while (iter != prefetch_tasks.end()) {
-        unique_lock<mutex> task_lock((*iter)->task_mutex);
         if ((*iter)->key == key) {
+            unique_lock<mutex> task_lock((*iter)->task_mutex);
             prediction_success = true;
             prediction_hit++;
             if ((*iter)->task_state == finished) {
@@ -213,6 +213,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 (*iter)->callback = callback;
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
             }
+            task_lock.unlock();
         }
         if ((*iter)->task_state == finished) {
             delete *iter;
@@ -220,7 +221,6 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         } else {
             iter++;
         }
-        task_lock.unlock();
     }
     if (!prediction_success) {
         task *db_task = new task(get, key, std::move(callback));
