@@ -189,6 +189,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             res_len = 1;
         }
         assert(res[0] == 1);
+        assert(res_len < BUF_LEN);
         if (write(sockfd, res, res_len) != (ssize_t) res_len) {
             cerr << "Error sending result to client" << endl;
             return;
@@ -272,6 +273,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
 
                 assert(res[0] == 1);
                 assert(val.size() == VAL_LEN);
+                assert(res_len < BUF_LEN);
 
                 write(sockfd, res, res_len);
                 lock.lock();
