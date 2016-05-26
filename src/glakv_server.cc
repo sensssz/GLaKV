@@ -223,9 +223,11 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             iter++;
         }
     }
-    for (auto db_task : tasks) {
-        if (db_task->task_state == detached) {
-            delete db_task;
+    for (auto task_iter = tasks.begin(); task_iter != tasks.end(); ++task_iter) {
+        if ((*task_iter)->task_state == detached) {
+            delete (*task_iter);
+            iter = tasks.erase(task_iter);
+            --task_iter;
         }
     }
     if (!prediction_success) {
