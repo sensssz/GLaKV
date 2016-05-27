@@ -93,6 +93,7 @@ uint64_t get_uint64(char *buf) {
 string send_get(int sockfd, uint32_t key) {
     char cmd_buf[BUF_LEN];
     char res_buf[BUF_LEN];
+    memset(res_buf, 0, BUF_LEN);
     size_t GET_LEN = strlen(GET);
     memcpy(cmd_buf, GET, GET_LEN);
     store_uint32(cmd_buf + GET_LEN, key);
