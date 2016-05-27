@@ -171,8 +171,8 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
 }
 
 bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock,
-                        list<task *> &tasks, uint32_t key, list<task *> &prefetch_tasks, string &val) {
-    auto callback = [key, sockfd, &db, &pool, &prefetch_tasks, &latencies, &lock] (bool success, string &value, double time) {
+                        list<task *> &tasks, uint32_t key, list<task *> &prefetch_tasks, string &val, uint32_t &response_count) {
+    auto callback = [key, sockfd, &db, &pool, &prefetch_tasks, &latencies, &lock, &response_count] (bool success, string &value, double time) {
         char res[BUF_LEN];
         memset(res, 0, BUF_LEN);
         uint64_t res_len = 0;
@@ -190,6 +190,8 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         }
         assert(res[0] == 1);
         assert(res_len == 1 + INT_LEN + VAL_LEN);
+        ++response_count;
+        assert(response_count == 1);
         if (write(sockfd, res, res_len) != (ssize_t) res_len) {
             cerr << "Error sending result to client" << endl;
             return;
@@ -243,6 +245,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
     reported = false;
     char buffer[BUF_LEN];
     uint32_t key;
+    uint32_t response_count = 0;
     while (!quit) {
         bzero(buffer, BUF_LEN);
         if (read(sockfd, buffer, BUF_LEN) <= 0) {
@@ -254,11 +257,12 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         size_t DEL_LEN = strlen(DEL);
         size_t QUIT_LEN = strlen(QUIT);
         if (strncmp(GET, buffer, GET_LEN) == 0) {
+            response_count = 0;
             key = get_uint32(buffer + GET_LEN);
             assert(0 <= key && key < db.size());
             string val;
             auto start = std::chrono::high_resolution_clock::now();
-            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, tasks, key, prefetch_tasks, val)) {
+            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, tasks, key, prefetch_tasks, val, response_count)) {
                 auto diff = std::chrono::high_resolution_clock::now() - start;
                 double time = diff.count() / 1000;
                 prefetch_for_key(db, pool, key, prefetch_tasks);
@@ -274,6 +278,8 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 assert(val.size() == VAL_LEN);
                 assert(res_len == 1 + INT_LEN + VAL_LEN);
 
+                ++response_count;
+                assert(response_count == 1);
                 if (write(sockfd, res, res_len) != (ssize_t) res_len) {
                     cerr << "ERROR sending result to client" << endl;
                 }
