@@ -209,6 +209,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             if (db_task->task_state == finished || db_task->task_state == detached) {
                 prefetch_success = true;
                 prefetch_hit++;
+                prediction_hit++;
                 val = db_task->val;
             } else if (!prefetch_success && !prediction_success) {
                 prediction_success = true;
