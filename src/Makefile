@@ -19,7 +19,7 @@ RM = rm -rf
 
 all: release
 
-release: CXXFLAGS += -O3
+release: CXXFLAGS += -O3 -DNDEBUG
 release: exec
 
 debug: CXXFLAGS += -g
