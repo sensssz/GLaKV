@@ -104,6 +104,9 @@ string send_get(int sockfd, uint32_t key) {
     if ((res_len = read(sockfd, res_buf, BUF_LEN)) <= 0) {
         error("ERROR receiving result");
     }
+    if (res_len != 1 + INT_LEN + VAL_LEN) {
+        cout << res_len << endl;
+    }
     assert(res_len == 1 + INT_LEN + VAL_LEN);
     for (ssize_t index = 1 + INT_LEN; index < res_len; ++index) {
         assert(res_buf[index] == 0x42);
