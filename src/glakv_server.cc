@@ -266,6 +266,15 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     return prefetch_success;
 }
 
+void delete_tasks(list<task *> &tasks) {
+    for (auto db_task : tasks) {
+        while (db_task->task_state != detached) {
+            std::this_thread::sleep_for(microseconds(10));
+        }
+        delete db_task;
+    }
+}
+
 void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock) {
     list<task *> prefetch_tasks;
     list<task *> deprecated_tasks;
@@ -347,18 +356,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
         }
     }
     --num_clients;
-    for (auto db_task : prefetch_tasks) {
-        while (db_task->task_state != detached) {
-            std::this_thread::sleep_for(microseconds(10));
-        }
-        delete db_task;
-    }
-    for (auto db_task : tasks) {
-        while (db_task->task_state != detached) {
-            std::this_thread::sleep_for(microseconds(10));
-        }
-        delete db_task;
-    }
+    delete_tasks(prefetch_tasks);
+    delete_tasks(deprecated_tasks);
+    delete_tasks(tasks);
     close(sockfd);
 }
 
