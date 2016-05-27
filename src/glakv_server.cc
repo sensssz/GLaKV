@@ -201,7 +201,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         lock.unlock();
     };
 
-//    queue_size += prefetch_tasks.size();
+    queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
     for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
@@ -279,7 +279,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             assert(0 <= key && key < db.size());
             string val;
             auto start = std::chrono::high_resolution_clock::now();
-            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, tasks, key, prefetch_tasks, val, response_count)) {
+            if (prefetch_or_submit(sockfd, pool, db, latencies, lock, tasks, deprecated_tasks, key, prefetch_tasks, val, response_count)) {
                 auto diff = std::chrono::high_resolution_clock::now() - start;
                 double time = diff.count() / 1000;
                 prefetch_for_key(db, pool, key, prefetch_tasks);
