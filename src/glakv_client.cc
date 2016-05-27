@@ -102,7 +102,7 @@ string send_get(int sockfd, uint32_t key) {
     if (write(sockfd, cmd_buf, len) != (ssize_t) len) {
         error("ERROR sending command");
     }
-    if ((res_len = read(sockfd, res_buf, BUF_LEN)) <= 0) {
+    if ((res_len = read(sockfd, res_buf, BUF_LEN)) < 0) {
         error("ERROR receiving result");
     }
     if (res_len != 1 + INT_LEN + VAL_LEN) {

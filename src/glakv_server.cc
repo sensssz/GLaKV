@@ -204,27 +204,31 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
     bool prefetch_success = false;
     bool prediction_success = false;
     for (auto db_task : prefetch_tasks) {
-        if (!prefetch_success && db_task->key == key &&
+        if (!prefetch_success && db_task->key == key && db_task->operation != noop &&
             (db_task->task_state == finished || db_task->task_state == detached)) {
             prefetch_success = true;
             val = db_task->val;
             prefetch_hit++;
-        } else if ((db_task->key != key || prefetch_success) && db_task->task_state == in_queue) {
+        } else if ((db_task->key != key || prefetch_success) &&
+                db_task->operation != noop &&
+                db_task->task_state == in_queue) {
             unique_lock<mutex> task_lock(db_task->task_mutex);
             db_task->operation = noop;
             task_lock.unlock();
         }
     }
     for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
-        if (!prefetch_success && !prediction_success &&
-            (*iter)->key == key && (*iter)->task_state == in_queue) {
+        if (!prefetch_success && !prediction_success && (*iter)->key == key &&
+            (*iter)->task_state == in_queue && (*iter)->operation != noop) {
             prediction_success = true;
             prediction_hit++;
             unique_lock<mutex> task_lock((*iter)->task_mutex);
             (*iter)->callback = callback;
             (*iter)->birth_time = std::chrono::high_resolution_clock::now();
             task_lock.unlock();
-        } else if ((*iter)->key == key && prediction_success && (*iter)->task_state == in_queue) {
+        } else if ((*iter)->key == key && prediction_success &&
+                (*iter)->operation != noop &&
+                (*iter)->task_state == in_queue) {
             unique_lock<mutex> task_lock((*iter)->task_mutex);
             (*iter)->operation = noop;
             task_lock.unlock();
