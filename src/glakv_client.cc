@@ -105,14 +105,14 @@ string send_get(int sockfd, uint32_t key) {
     if ((res_len = read(sockfd, res_buf, BUF_LEN)) < 0) {
         error("ERROR receiving result");
     }
-    if (res_len != 1 + INT_LEN + VAL_LEN) {
-        cout << res_len << endl;
-        cout << res_buf + 1 + INT_LEN << endl;
-    }
-    assert(res_len == 1 + INT_LEN + VAL_LEN);
-    for (ssize_t index = 1 + INT_LEN; index < res_len; ++index) {
-        assert(res_buf[index] == 'A');
-    }
+//    if (res_len != 1 + INT_LEN + VAL_LEN) {
+//        cout << res_len << endl;
+//        cout << res_buf + 1 + INT_LEN << endl;
+//    }
+//    assert(res_len == 1 + INT_LEN + VAL_LEN);
+//    for (ssize_t index = 1 + INT_LEN; index < res_len; ++index) {
+//        assert(res_buf[index] == 'A');
+//    }
     assert(res_buf[0] == 1);
     uint64_t vlen = get_uint64(res_buf + 1);
     string val(res_buf + 1 + INT_LEN, vlen);
