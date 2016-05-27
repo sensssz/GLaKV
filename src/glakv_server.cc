@@ -389,8 +389,8 @@ int main(int argc, char *argv[])
                         sum += latency;
                     }
                     cout << sum / latencies.size() << "," << latencies.size() << endl;
-//                    cout << "Prediction hits: " << prediction_hit << endl;
-//                    cout << "Prefetch hits: " << prefetch_hit << endl;
+                    cout << "Prediction hits: " << prediction_hit << endl;
+                    cout << "Prefetch hits: " << prefetch_hit << endl;
                     latencies.clear();
                     prediction_hit = 0;
                     prefetch_hit = 0;
