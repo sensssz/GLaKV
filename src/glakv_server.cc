@@ -53,7 +53,6 @@ static atomic<int> num_clients(0);
 static bool reported = true;
 static double prediction_hit = 0;
 static double prefetch_hit = 0;
-static double queue_size = 0;
 
 void quit_server(int) {
     cout << endl << "Receives CTRL-C, quiting..." << endl;
@@ -163,27 +162,15 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
     if (prefetch) {
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
-            task *db_task = new task(fetch, prediction, [](bool, string &, double) { });
+            task *db_task = new task(fetch, prediction, [](bool, string &, double) {});
             prefetch_tasks.push_back(db_task);
             pool.submit_task(db_task);
-//            bool duplicated = false;
-//            for (auto db_task : prefetch_tasks) {
-//                if (db_task->key == prediction) {
-//                    duplicated = true;
-//                    break;
-//                }
-//            }
-//            if (!duplicated) {
-//                task *db_task = new task(fetch, prediction, [](bool, string &, double) { });
-//                prefetch_tasks.push_back(db_task);
-//                pool.submit_task(db_task);
-//            }
         }
     }
 }
 
 bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock, list<task *> &tasks,
-                        list<task *> deprecated_tasks, uint32_t key, list<task *> &prefetch_tasks, string &val, uint32_t &response_count) {
+                        list<task *> &deprecated_tasks, uint32_t key, list<task *> &prefetch_tasks, string &val, uint32_t &response_count) {
     auto callback = [key, sockfd, &db, &pool, &prefetch_tasks, &latencies, &lock, &response_count] (bool success, string &value, double time) {
         char res[BUF_LEN];
         memset(res, 0, BUF_LEN);
@@ -213,7 +200,6 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         lock.unlock();
     };
 
-    queue_size += prefetch_tasks.size();
     bool prefetch_success = false;
     bool prediction_success = false;
     for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
@@ -244,7 +230,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             delete db_task;
             iter = deprecated_tasks.erase(iter);
             --iter;
-        } else if (db_task->operation != noop) {
+        } else if (db_task->operation != noop && db_task->task_state == in_queue) {
             unique_lock<mutex> task_lock(db_task->task_mutex);
             db_task->operation = noop;
             task_lock.unlock();
@@ -405,7 +391,6 @@ int main(int argc, char *argv[])
                     cout << sum / latencies.size() << "," << latencies.size() << endl;
 //                    cout << "Prediction hits: " << prediction_hit << endl;
 //                    cout << "Prefetch hits: " << prefetch_hit << endl;
-//                    cout << "Average queue size: " << queue_size / latencies.size() << endl;
                     latencies.clear();
                     prediction_hit = 0;
                     prefetch_hit = 0;
