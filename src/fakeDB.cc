@@ -17,8 +17,8 @@ using std::cout;
 using std::endl;
 using std::chrono::microseconds;
 
-const int CONTENTION = 50;
-const int GET_TIME = 300;
+const int CONTENTION = 10;
+const int GET_TIME = 100;
 const int PUT_TIME = 150;
 const int DEL_TIME = 100;
 
