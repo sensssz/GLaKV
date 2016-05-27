@@ -106,7 +106,7 @@ string send_get(int sockfd, uint32_t key) {
     }
     if (res_len != 1 + INT_LEN + VAL_LEN) {
         cout << res_len << endl;
-        cout << res_buf << endl;
+        cout << res_buf + 1 + INT_LEN << endl;
     }
     assert(res_len == 1 + INT_LEN + VAL_LEN);
     for (ssize_t index = 1 + INT_LEN; index < res_len; ++index) {
