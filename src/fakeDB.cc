@@ -17,20 +17,21 @@ using std::cout;
 using std::endl;
 using std::chrono::microseconds;
 
-const int CONTENTION = 10;
-const int GET_TIME = 100;
+const int CONTENTION = 5;
+const int GET_TIME = 50;
 const int PUT_TIME = 150;
 const int DEL_TIME = 100;
 
 fakeDB::fakeDB(string dir, uint32_t num_prefetch_in) : num_prefetch(num_prefetch_in) {
-    if (dir[dir.size() - 1] != '/') {
-        dir += '/';
-    }
-    dir += "glakv.db";
-    int db_file = open(dir.c_str(), O_RDONLY);
-    assert(db_file > 0);
-    read(db_file, &(fakeDB::db_size), sizeof(uint32_t));
-    close(db_file);
+//    if (dir[dir.size() - 1] != '/') {
+//        dir += '/';
+//    }
+//    dir += "glakv.db";
+//    int db_file = open(dir.c_str(), O_RDONLY);
+//    assert(db_file > 0);
+//    read(db_file, &(fakeDB::db_size), sizeof(uint32_t));
+//    close(db_file);
+    db_size = DB_SIZE;
 }
 
 bool fakeDB::get(uint32_t key, string &val) {
