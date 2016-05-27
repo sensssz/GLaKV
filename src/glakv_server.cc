@@ -256,7 +256,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             --iter;
         }
     }
-    if (!prediction_success) {
+    if (!prediction_success && !prefetch_success) {
         task *db_task = new task(get, key, std::move(callback));
         tasks.push_back(db_task);
         pool.submit_task(db_task);
