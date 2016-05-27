@@ -275,7 +275,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 assert(val.size() == VAL_LEN);
                 assert(res_len < BUF_LEN);
 
-                write(sockfd, res, res_len);
+                if (write(sockfd, res, res_len) != res_len) {
+                    cerr << "ERROR sending result to client" << endl;
+                }
                 for (auto byte : val) {
                     assert(byte == 0x42);
                 }

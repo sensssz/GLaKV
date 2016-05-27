@@ -36,7 +36,7 @@ fakeDB::fakeDB(string dir, uint32_t num_prefetch_in) : num_prefetch(num_prefetch
 bool fakeDB::get(uint32_t key, string &val) {
     std::this_thread::sleep_for(microseconds(GET_TIME + num_prefetch * CONTENTION));
     char value[VAL_LEN];
-    memset(value, 0x42, VAL_LEN);
+    memset(value, 'A', VAL_LEN);
     val = string(value, VAL_LEN);
     return true;
 }
