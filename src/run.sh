@@ -24,7 +24,7 @@ do
     do
         for((c=1;c<=32;c*=2));
         do
-            for p in `seq 0 5`;
+            for p in `seq 0 2`;
             do
                 if [[ ! -z ${quit+x} ]]; then
                     exit 0

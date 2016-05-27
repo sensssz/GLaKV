@@ -163,18 +163,21 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
     if (prefetch) {
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
-            bool duplicated = false;
-            for (auto db_task : prefetch_tasks) {
-                if (db_task->key == prediction) {
-                    duplicated = true;
-                    break;
-                }
-            }
-            if (!duplicated) {
-                task *db_task = new task(fetch, prediction, [](bool, string &, double) { });
-                prefetch_tasks.push_back(db_task);
-                pool.submit_task(db_task);
-            }
+            task *db_task = new task(fetch, prediction, [](bool, string &, double) { });
+            prefetch_tasks.push_back(db_task);
+            pool.submit_task(db_task);
+//            bool duplicated = false;
+//            for (auto db_task : prefetch_tasks) {
+//                if (db_task->key == prediction) {
+//                    duplicated = true;
+//                    break;
+//                }
+//            }
+//            if (!duplicated) {
+//                task *db_task = new task(fetch, prediction, [](bool, string &, double) { });
+//                prefetch_tasks.push_back(db_task);
+//                pool.submit_task(db_task);
+//            }
         }
     }
 }
@@ -221,7 +224,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 prefetch_success = true;
                 prefetch_hit++;
                 val = db_task->val;
-            } else {
+            } else if (!prefetch_success && !prediction_success) {
                 prediction_success = true;
                 prediction_hit++;
                 (*iter)->callback = callback;
@@ -235,7 +238,6 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             deprecated_tasks.push_back(db_task);
         }
     }
-    assert(prefetch_tasks.size() <= 1);
     for (auto iter = deprecated_tasks.begin(); iter != deprecated_tasks.end(); ++iter) {
         auto db_task = *iter;
         if (db_task->task_state == detached) {
