@@ -110,7 +110,7 @@ string send_get(int sockfd, uint32_t key) {
     }
     assert(res_len == 1 + INT_LEN + VAL_LEN);
     for (ssize_t index = 1 + INT_LEN; index < res_len; ++index) {
-        assert(res_buf[index] == 0x42);
+        assert(res_buf[index] == 'A');
     }
     assert(res_buf[0] == 1);
     uint64_t vlen = get_uint64(res_buf + 1);

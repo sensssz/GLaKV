@@ -279,7 +279,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                     cerr << "ERROR sending result to client" << endl;
                 }
                 for (auto byte : val) {
-                    assert(byte == 0x42);
+                    assert(byte == 'A');
                 }
                 lock.lock();
                 latencies.push_back(time);
