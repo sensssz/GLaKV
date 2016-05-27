@@ -97,11 +97,16 @@ string send_get(int sockfd, uint32_t key) {
     memcpy(cmd_buf, GET, GET_LEN);
     store_uint32(cmd_buf + GET_LEN, key);
     size_t len = GET_LEN + KEY_LEN;
+    ssize_t res_len = 0;
     if (write(sockfd, cmd_buf, len) != (ssize_t) len) {
         error("ERROR sending command");
     }
-    if (read(sockfd, res_buf, BUF_LEN) < 0) {
+    if ((res_len = read(sockfd, res_buf, BUF_LEN)) <= 0) {
         error("ERROR receiving result");
+    }
+    assert(res_len == 1 + INT_LEN + VAL_LEN);
+    for (ssize_t index = 1 + INT_LEN; index < res_len; ++index) {
+        assert(res_buf[index] == 0x42);
     }
     assert(res_buf[0] == 1);
     uint64_t vlen = get_uint64(res_buf + 1);
@@ -113,7 +118,6 @@ void send_put(int sockfd, uint32_t key, const char *val_buf, uint64_t vlen) {
     char cmd_buf[BUF_LEN];
     char res_buf[BUF_LEN];
     size_t PUT_LEN = strlen(PUT);
-    ssize_t res_len = 0;
     memcpy(cmd_buf, PUT, PUT_LEN);
     store_uint32(cmd_buf + PUT_LEN, key);
     store_uint64(cmd_buf + PUT_LEN + KEY_LEN, vlen);
@@ -122,12 +126,8 @@ void send_put(int sockfd, uint32_t key, const char *val_buf, uint64_t vlen) {
     if (write(sockfd, cmd_buf, len) != (ssize_t) len) {
         error("ERROR sending command");
     }
-    if ((res_len = read(sockfd, res_buf, BUF_LEN)) <= 0) {
+    if ((read(sockfd, res_buf, BUF_LEN)) <= 0) {
         error("ERROR receiving result");
-    }
-    assert(res_len == 1 + INT_LEN + VAL_LEN);
-    for (ssize_t index = 1 + INT_LEN; index < res_len; ++index) {
-        assert(res_buf[index] == 0x42);
     }
     assert(res_buf[0] == 1);
 }

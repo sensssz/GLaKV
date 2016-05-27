@@ -181,7 +181,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         if (success) {
             res[0] = 1;
             store_uint64(res + 1, value.size());
-            memcpy(res + 1 + INT_LEN, value.c_str(), value.size());
+            memcpy(res + 1 + INT_LEN, value.data(), value.size());
             res_len = 1 + INT_LEN + value.size();
             prefetch_for_key(db, pool, key, prefetch_tasks, prefetch_mutex);
         } else {
@@ -268,7 +268,7 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 uint64_t res_len = 0;
                 res[0] = 1;
                 store_uint64(res + 1, val.size());
-                memcpy(res + 1 + INT_LEN, val.c_str(), val.size());
+                memcpy(res + 1 + INT_LEN, val.data(), val.size());
                 res_len = 1 + INT_LEN + val.size();
 
                 assert(res[0] == 1);
