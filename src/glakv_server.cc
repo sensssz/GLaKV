@@ -163,9 +163,18 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
     if (prefetch) {
         for (int count = 0; count < num_prefetch; ++count) {
             uint32_t prediction = (key + count + db.size() / 3) % db.size();
-            task *db_task = new task(fetch, prediction, [] (bool, string &, double) {});
-            prefetch_tasks.push_back(db_task);
-            pool.submit_task(db_task);
+            bool duplicated = false;
+            for (auto db_task : prefetch_tasks) {
+                if (db_task->key == prediction) {
+                    duplicated = true;
+                    break;
+                }
+            }
+            if (!duplicated) {
+                task *db_task = new task(fetch, prediction, [](bool, string &, double) { });
+                prefetch_tasks.push_back(db_task);
+                pool.submit_task(db_task);
+            }
         }
     }
 }
