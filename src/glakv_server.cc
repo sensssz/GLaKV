@@ -171,7 +171,7 @@ void prefetch_for_key(DB &db, thread_pool &pool, uint32_t key, list<task *> &pre
 
 bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &latencies, mutex &lock, list<task *> &tasks,
                         list<task *> &deprecated_tasks, uint32_t key, list<task *> &prefetch_tasks, string &val, uint32_t &response_count) {
-    auto callback = [key, sockfd, &db, &pool, &prefetch_tasks, &latencies, &lock, &response_count] (bool success, string &value, double time) {
+    auto callback = [key, sockfd, &db, &pool, &latencies, &lock, &response_count] (bool success, string &value, double time) {
         char res[BUF_LEN];
         memset(res, 0, BUF_LEN);
         uint64_t res_len = 0;
@@ -182,7 +182,6 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             store_uint64(res + 1, value.size());
             memcpy(res + 1 + INT_LEN, value.data(), value.size());
             res_len = 1 + INT_LEN + value.size();
-            prefetch_for_key(db, pool, key, prefetch_tasks);
         } else {
             res[0] = 0;
             res_len = 1;
@@ -250,6 +249,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         tasks.push_back(db_task);
         pool.submit_task(db_task);
     }
+    prefetch_for_key(db, pool, key, prefetch_tasks);
     return prefetch_success;
 }
 
@@ -289,7 +289,6 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
             if (prefetch_or_submit(sockfd, pool, db, latencies, lock, tasks, deprecated_tasks, key, prefetch_tasks, val, response_count)) {
                 auto diff = std::chrono::high_resolution_clock::now() - start;
                 double time = diff.count() / 1000;
-                prefetch_for_key(db, pool, key, prefetch_tasks);
                 char res[BUF_LEN];
                 memset(res, 0, BUF_LEN);
                 uint64_t res_len = 0;
