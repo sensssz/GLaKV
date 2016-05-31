@@ -21,8 +21,8 @@ public:
     }
 
     mpsc_queue(mpsc_queue &&rhs) :
-            _head(rhs._head.load()),
-            _tail(rhs._tail.load()) {
+            _head(rhs._head.load(std::memory_order_relaxed)),
+            _tail(rhs._tail.load(std::memory_order_relaxed)) {
         rhs._head = nullptr;
         rhs._tail = nullptr;
     }
