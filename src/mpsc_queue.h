@@ -5,20 +5,6 @@
 #ifndef GLAKV_MPSC_QUEUE_H
 #define GLAKV_MPSC_QUEUE_H
 
-struct mpscq_node_t
-{
-    mpscq_node_t* volatile  next;
-
-};
-
-struct mpscq_t
-{
-    mpscq_node_t* volatile  head;
-    mpscq_node_t*           tail;
-    mpscq_node_t            stub;
-
-};
-
 template <typename T>
 class mpsc_queue{
 private:
@@ -86,6 +72,20 @@ bool mpsc_queue<T>::try_dequeue(T &element) {
     return false;
 }
 
+/*
+struct mpscq_node_t
+{
+    mpscq_node_t* volatile  next;
+
+};
+
+struct mpscq_t
+{
+    mpscq_node_t* volatile  head;
+    mpscq_node_t*           tail;
+    mpscq_node_t            stub;
+
+};
 
 void mpscq_create(mpscq_t* self)
 {
@@ -133,5 +133,6 @@ mpscq_node_t* mpscq_pop(mpscq_t* self)
     }
     return 0;
 }
+ */
 
 #endif //GLAKV_MPSC_QUEUE_H
