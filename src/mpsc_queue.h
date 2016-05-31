@@ -21,8 +21,8 @@ public:
     }
 
     mpsc_queue(mpsc_queue &&rhs) :
-            _head(rhs._head),
-            _tail(rhs._tail) {
+            _head(rhs._head.load()),
+            _tail(rhs._tail.load()) {
         rhs._head = nullptr;
         rhs._tail = nullptr;
     }
