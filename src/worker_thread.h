@@ -24,10 +24,9 @@ private:
     thread worker;
     bool quit;
     DB &db;
-
-    worker_thread(worker_thread &&other) : db(other.db) {}
 public:
     worker_thread(DB &db);
+    worker_thread(worker_thread &&other);
     void start();
     void set_stop();
     void join();

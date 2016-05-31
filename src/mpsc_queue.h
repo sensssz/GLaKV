@@ -20,6 +20,10 @@ public:
         front->next.store(NULL, std::memory_order_relaxed);
     }
 
+    mpsc_queue(mpsc_queue &&rhs) :
+            _head(std::move(rhs._head)),
+            _tail(std::move(rhs._tail)) {}
+
     ~mpsc_queue()
     {
         T output;
