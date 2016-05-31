@@ -31,10 +31,10 @@ template <typename T>
 mpsc_queue<T>::mpsc_queue() : head(&stub), tail(&stub) {}
 
 template <typename T>
-mpsc_queue<T>::mpsc_queue(const mpsc_queue &rhs) : head(&stub), tail(&stub), stub(rhs.stub) {}
+mpsc_queue<T>::mpsc_queue(const mpsc_queue<T> &rhs) : head(&stub), tail(&stub), stub(rhs.stub) {}
 
 template <typename T>
-mpsc_queue &mpsc_queue<T>::operator=(const mpsc_queue &rhs) {}
+mpsc_queue<T> &mpsc_queue<T>::operator=(const mpsc_queue<T> &rhs) {}
 
 template <typename T>
 void mpsc_queue<T>::enqueue(mpsc_node_t *node) {
