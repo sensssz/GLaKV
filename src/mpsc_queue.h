@@ -17,14 +17,16 @@ public:
             _tail(_head.load(std::memory_order_relaxed))
     {
         buffer_node_t* front = _head.load(std::memory_order_relaxed);
-        front->next.store(NULL, std::memory_order_relaxed);
+        front->next.store(nullptr, std::memory_order_relaxed);
     }
 
     mpsc_queue(mpsc_queue &&rhs) :
             _head(rhs._head.load(std::memory_order_relaxed)),
             _tail(rhs._tail.load(std::memory_order_relaxed)) {
-        rhs._head = nullptr;
-        rhs._tail = nullptr;
+        rhs._head.store(reinterpret_cast<buffer_node_t*>(new buffer_node_aligned_t), std::memory_order_relaxed);
+        rhs._tail.store(rhs._head.load(std::memory_order_relaxed), std::memory_order_relaxed);
+        buffer_node_t* front = rhs._head.load(std::memory_order_relaxed);
+        front->next.store(nullptr, std::memory_order_relaxed);
     }
 
     ~mpsc_queue()
@@ -39,7 +41,7 @@ public:
     {
         buffer_node_t* node = reinterpret_cast<buffer_node_t*>(new buffer_node_aligned_t);
         node->data = input;
-        node->next.store(NULL, std::memory_order_relaxed);
+        node->next.store(nullptr, std::memory_order_relaxed);
 
         buffer_node_t* prev_head = _head.exchange(node, std::memory_order_acq_rel);
         prev_head->next.store(node, std::memory_order_release);
@@ -50,7 +52,7 @@ public:
         buffer_node_t* tail = _tail.load(std::memory_order_relaxed);
         buffer_node_t* next = tail->next.load(std::memory_order_acquire);
 
-        if (next == NULL) {
+        if (next == nullptr) {
             return false;
         }
 
