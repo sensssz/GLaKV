@@ -5,9 +5,6 @@
 #ifndef GLAKV_MPSC_QUEUE_H
 #define GLAKV_MPSC_QUEUE_H
 
-#include <stdatomic.h>
-#include <cassert>
-
 struct mpscq_node_t
 {
     mpscq_node_t* volatile  next;
