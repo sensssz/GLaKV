@@ -44,7 +44,7 @@ mpsc_queue<T>::mpsc_queue() : head(&stub), tail(&stub) {}
 
 template <typename T>
 void mpsc_queue<T>::enqueue(mpsc_node_t *node) {
-    mpsc_node_t volatile *prev = __sync_lock_test_and_set(&head, node);
+    mpsc_node_t *prev = (mpsc_node_t *) __sync_lock_test_and_set(&head, node);
     prev->next = node;
 }
 
@@ -56,18 +56,18 @@ void mpsc_queue<T>::enqueue(T element) {
 template <typename T>
 bool mpsc_queue<T>::try_dequeue(T &element) {
     mpsc_node_t volatile *to_dequeue = tail;
-    mpsc_node_t volatile *next = tail->next;
+    mpsc_node_t *next = (mpsc_node_t *) tail->next;
     if (to_dequeue == &stub)
     {
         if (0 == next)
             return false;
-        tail = (mpsc_node_t *) next;
+        tail = next;
         to_dequeue = next;
-        next = next->next;
+        next = (mpsc_node_t *) next->next;
     }
     if (next)
     {
-        tail = (mpsc_node_t *) next;
+        tail = next;
         element = to_dequeue->element;
         delete to_dequeue;
         return true;
@@ -75,10 +75,10 @@ bool mpsc_queue<T>::try_dequeue(T &element) {
     if (to_dequeue != head)
         return false;
         enqueue(&stub);
-    next = to_dequeue->next;
+    next = (mpsc_node_t *) to_dequeue->next;
     if (next)
     {
-        tail = (mpsc_node_t *) next;
+        tail = next;
         element = to_dequeue->element;
         delete to_dequeue;
         return true;
