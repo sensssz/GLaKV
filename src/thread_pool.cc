@@ -14,7 +14,7 @@ thread_pool::thread_pool(DB &db) : thread_pool(db, 5) {
 
 thread_pool::thread_pool(DB &db, size_t pool_size) {
     for (size_t count = 0; count < pool_size; ++count) {
-        workers.emplace_back(task_queue, db);
+        workers.emplace_back(db);
     }
     for (auto &worker : workers) {
         worker.start();
@@ -31,5 +31,11 @@ thread_pool::~thread_pool() {
 }
 
 void thread_pool::submit_task(task *db_task) {
-    task_queue.enqueue(db_task);
+    auto min_job_worker = &(workers.front());
+    for (auto &worker : workers) {
+        if (worker.num_jobs() < min_job_worker->num_jobs()) {
+            min_job_worker = &worker;
+        }
+    }
+    min_job_worker->submit_job(db_task);
 }

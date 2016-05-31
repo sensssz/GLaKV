@@ -72,6 +72,14 @@ void usage(ostream &os) {
     os << "-h       show this message" << endl;
     os << "--dir" << endl;
     os << "-d       directory to store the database files" << endl;
+    os << "--prefetch" << endl;
+    os << "-p       number of prefetches per each get operation" << endl;
+    os << "--num" << endl;
+    os << "-n       number of experiments before automatically quitting (0 means no automatic quitting)" << endl;
+    os << "--cache" << endl;
+    os << "-c       size of cache in terms of percentage of database size" << endl;
+    os << "--threads" << endl;
+    os << "-t       number of worker threads" << endl;
 }
 
 void parse_opts(int argc, char *argv[], int &help_flag, string &dir, int &num_exp, double &cache_size, int &num_threads) {

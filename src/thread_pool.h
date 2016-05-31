@@ -16,11 +16,9 @@
 using std::mutex;
 using std::condition_variable;
 using std::vector;
-using moodycamel::ConcurrentQueue;
 
 class thread_pool {
 private:
-    ConcurrentQueue<task *> task_queue;
     vector<worker_thread> workers;
 public:
     thread_pool(DB &db);

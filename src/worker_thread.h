@@ -8,6 +8,7 @@
 #include "DB.h"
 #include "task.h"
 #include "concurrentqueue.h"
+#include "mpsc_queue.h"
 
 #include <mutex>
 #include <thread>
@@ -16,20 +17,22 @@
 using std::mutex;
 using std::thread;
 using std::condition_variable;
-using moodycamel::ConcurrentQueue;
 
 class worker_thread {
 private:
-    ConcurrentQueue<task *> &task_queue;
+    mpsc_queue<task *> task_queue;
+    uint32_t size;
     thread worker;
     bool quit;
     DB &db;
 public:
-    worker_thread(ConcurrentQueue<task *> &queue, DB &db);
+    worker_thread(DB &db);
     worker_thread(worker_thread &&other);
     void start();
     void set_stop();
     void join();
+    void submit_job(task *db_task);
+    uint32_t num_jobs();
 };
 
 

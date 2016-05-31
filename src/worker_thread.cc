@@ -15,8 +15,7 @@ using std::string;
 using std::unique_lock;
 using std::chrono::microseconds;
 
-worker_thread::worker_thread(ConcurrentQueue<task *> &queue, DB &db_in)
-        : task_queue(queue), quit(false), db(db_in) {}
+worker_thread::worker_thread(DB &db_in) : quit(false), db(db_in) {}
 
 worker_thread::worker_thread(worker_thread &&other)
         : task_queue(other.task_queue), worker(std::move(other.worker)),
@@ -57,6 +56,7 @@ void worker_thread::start() {
             db_task->task_state = finished;
             lock.unlock();
             db_task->task_state = detached;
+            --size;
         }
     });
 }
@@ -67,4 +67,13 @@ void worker_thread::set_stop() {
 
 void worker_thread::join() {
     worker.join();
+}
+
+void worker_thread::submit_job(task *db_task) {
+    ++size;
+    task_queue.enqueue(db_task);
+}
+
+uint32_t worker_thread::num_jobs() {
+    return size;
 }
