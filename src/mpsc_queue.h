@@ -22,11 +22,13 @@ struct mpscq_t
 template <typename T>
 class mpsc_queue{
 private:
-    typedef struct mpsc_node_t
+    struct mpsc_node_t
     {
         T element;
         mpsc_node_t volatile *next;
-    } mpsc_node_t;
+        mpsc_node_t() : next(nullptr) {}
+        mpsc_node_t(T element_in, mpsc_node_t volatile *next_in) : element(element_in), next(next_in) {}
+    };
     mpsc_node_t volatile     *head;
     mpsc_node_t              *tail;
     mpsc_node_t               stub;
@@ -38,23 +40,21 @@ public:
 };
 
 template <typename T>
-mpsc_queue::mpsc_queue() : head(&stub), tail(&stub) {
-    stub.next = 0;
-}
+mpsc_queue<T>::mpsc_queue() : head(&stub), tail(&stub) {}
 
 template <typename T>
-void mpsc_queue::enqueue(mpsc_node_t *node) {
+void mpsc_queue<T>::enqueue(mpsc_node_t *node) {
     mpsc_node_t* prev = __sync_bool_compare_and_swap(&head, node);
     prev->next = node;
 }
 
 template <typename T>
-void mpsc_queue::enqueue(T element) {
+void mpsc_queue<T>::enqueue(T element) {
     enqueue(new mpsc_node_t {element, nullptr});
 }
 
 template <typename T>
-bool mpsc_queue::try_dequeue(T &element) {
+bool mpsc_queue<T>::try_dequeue(T &element) {
     mpsc_node_t volatile *to_dequeue = tail;
     mpsc_node_t volatile *next = tail->next;
     if (to_dequeue == &stub)
