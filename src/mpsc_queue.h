@@ -21,8 +21,11 @@ public:
     }
 
     mpsc_queue(mpsc_queue &&rhs) :
-            _head(std::move(rhs._head)),
-            _tail(std::move(rhs._tail)) {}
+            _head(rhs._head),
+            _tail(rhs._tail) {
+        rhs._head = nullptr;
+        rhs._tail = nullptr;
+    }
 
     ~mpsc_queue()
     {
