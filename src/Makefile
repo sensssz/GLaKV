@@ -54,7 +54,7 @@ fakeDB.o: fakeDB.cc fakeDB.h config.h
 lrucache.o: lrucache.cc lrucache.h config.h
 	$(CXX) $(CXXFLAGS) lrucache.cc -o lrucache.o
 
-worker_thread.o: worker_thread.cc worker_thread.h
+worker_thread.o: worker_thread.cc worker_thread.h mpsc_queue.h
 	$(CXX) $(CXXFLAGS) worker_thread.cc -o worker_thread.o
 
 thread_pool.o: thread_pool.cc thread_pool.h

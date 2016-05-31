@@ -7,7 +7,6 @@
 
 #include "DB.h"
 #include "task.h"
-#include "concurrentqueue.h"
 #include "mpsc_queue.h"
 
 #include <mutex>

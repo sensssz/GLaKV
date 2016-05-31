@@ -6,7 +6,6 @@
 #define GLAKV_THREAD_POOL_H
 
 #include "task.h"
-#include "concurrentqueue.h"
 #include "worker_thread.h"
 
 #include <mutex>
