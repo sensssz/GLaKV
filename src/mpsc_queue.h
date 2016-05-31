@@ -98,7 +98,7 @@ void mpscq_create(mpscq_t* self)
 void mpscq_push(mpscq_t* self, mpscq_node_t* n)
 {
     n->next = 0;
-    mpscq_node_t* prev = __sync_bool_compare_and_swap(&self->head, n);
+    mpscq_node_t* prev = __sync_lock_test_and_set(&self->head, n);
     //(*)
     prev->next = n;
 
