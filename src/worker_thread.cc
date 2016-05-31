@@ -17,10 +17,6 @@ using std::chrono::microseconds;
 
 worker_thread::worker_thread(DB &db_in) : size(0), quit(false), db(db_in) {}
 
-worker_thread::worker_thread(worker_thread &&other)
-        : task_queue(other.task_queue), size(0), worker(std::move(other.worker)),
-          quit(other.quit), db(other.db) {}
-
 void worker_thread::start() {
     worker = thread([this] {
         task *db_task = nullptr;
