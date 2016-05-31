@@ -44,7 +44,7 @@ mpsc_queue<T>::mpsc_queue() : head(&stub), tail(&stub) {}
 
 template <typename T>
 void mpsc_queue<T>::enqueue(mpsc_node_t *node) {
-    mpsc_node_t* prev = __sync_bool_compare_and_swap(&head, node);
+    mpsc_node_t* prev = __sync_lock_test_and_set(&head, node);
     prev->next = node;
 }
 
