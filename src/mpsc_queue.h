@@ -21,12 +21,20 @@ private:
     void enqueue(mpsc_node_t *node);
 public:
     mpsc_queue();
+    mpsc_queue(const mpsc_queue &rhs);
+    mpsc_queue &operator=(const mpsc_queue &rhs);
     void enqueue(T element);
     bool try_dequeue(T &element);
 };
 
 template <typename T>
 mpsc_queue<T>::mpsc_queue() : head(&stub), tail(&stub) {}
+
+template <typename T>
+mpsc_queue<T>::mpsc_queue(const mpsc_queue &rhs) : head(&stub), tail(&stub), stub(rhs.stub) {}
+
+template <typename T>
+mpsc_queue &operator=(const mpsc_queue &rhs) {}
 
 template <typename T>
 void mpsc_queue<T>::enqueue(mpsc_node_t *node) {
