@@ -28,7 +28,7 @@ do
         do
             for((think=20;think<=100;think+=20));
             do
-                for p in `seq 0 2`;
+                for p in `seq 0 5`;
                 do
                     if [[ ! -z ${quit+x} ]]; then
                         exit 0
