@@ -207,7 +207,7 @@ void execute(uint32_t database_size, int num_exps, vector<int64_t> &latencies, m
 
 void run(int num_threads, uint32_t database_size, int num_exps) {
     vector<thread> threads;
-    vector<uint32_t> latencies;
+    vector<int64_t> latencies;
     mutex latency_mutex;
     for (int count = 0; count < num_threads; ++count) {
         thread t(execute, database_size, num_exps, std::ref(latencies), std::ref(latency_mutex));
