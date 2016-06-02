@@ -185,7 +185,7 @@ void execute(uint32_t database_size, int num_exps, vector<int64_t> &latencies, m
         auto start = std::chrono::high_resolution_clock::now();
         send_get(sockfd, key);
         auto diff = std::chrono::high_resolution_clock::now() - start;
-        unique_lock lock(latency_mutex);
+        unique_lock<mutex> lock(latency_mutex);
         latencies.push_back(diff.count());
         lock.unlock();
         if (false) {
