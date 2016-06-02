@@ -19,6 +19,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <mutex>
 
 #define BUF_LEN     (VAL_LEN * 2)
 #define GET         "Get"
@@ -33,6 +34,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::min;
+using std::mutex;
 using std::ostream;
 using std::rand;
 using std::string;
@@ -40,6 +42,7 @@ using std::thread;
 using std::uniform_int_distribution;
 using std::vector;
 using std::chrono::microseconds;
+using std::unique_lock;
 
 static double lambda = 1;
 static uint32_t think_time = 0;
@@ -169,7 +172,7 @@ void load_data(uint32_t db_size) {
  * an exponential distribution, where key + 1 has the highest
  * possibility, key + 2 has the second highest possibility, etc.
  */
-void execute(uint32_t database_size, int num_exps) {
+void execute(uint32_t database_size, int num_exps, vector<int64_t> &latencies, mutex &latency_mutex) {
     double total = 0;
     double zero = 0;
     int sockfd = connect();
@@ -179,7 +182,12 @@ void execute(uint32_t database_size, int num_exps) {
     exponential_distribution exp_dist(lambda, 1000);
     uint32_t key = uni_dist(generator);
     for (int count = 0; count < num_exps; ++count) {
+        auto start = std::chrono::high_resolution_clock::now();
         send_get(sockfd, key);
+        auto diff = std::chrono::high_resolution_clock::now() - start;
+        unique_lock lock(latency_mutex);
+        latencies.push_back(diff.count());
+        lock.unlock();
         if (false) {
             key = uni_dist(generator);
         } else {
@@ -199,13 +207,20 @@ void execute(uint32_t database_size, int num_exps) {
 
 void run(int num_threads, uint32_t database_size, int num_exps) {
     vector<thread> threads;
+    vector<uint32_t> latencies;
+    mutex latency_mutex;
     for (int count = 0; count < num_threads; ++count) {
-        thread t(execute, database_size, num_exps);
+        thread t(execute, database_size, num_exps, std::ref(latencies), std::ref(latency_mutex));
         threads.push_back(std::move(t));
     }
     for (auto &t : threads) {
         t.join();
     }
+    double sum = 0;
+    for (auto latency : latencies) {
+        sum += latency;
+    }
+    cout << sum / latencies.size() << "," << latencies.size() << endl;
 }
 
 void usage(ostream &os) {
