@@ -42,6 +42,7 @@ using std::vector;
 using std::chrono::microseconds;
 
 static double lambda = 1;
+static uint32_t think_time = 0;
 
 void error(const char *msg)
 {
@@ -98,11 +99,10 @@ string send_get(int sockfd, uint32_t key) {
     memcpy(cmd_buf, GET, GET_LEN);
     store_uint32(cmd_buf + GET_LEN, key);
     size_t len = GET_LEN + KEY_LEN;
-    ssize_t res_len = 0;
     if (write(sockfd, cmd_buf, len) != (ssize_t) len) {
         error("ERROR sending command");
     }
-    if ((res_len = read(sockfd, res_buf, BUF_LEN)) < 0) {
+    if ((read(sockfd, res_buf, BUF_LEN)) < 0) {
         error("ERROR receiving result");
     }
 //    if (res_len != 1 + INT_LEN + VAL_LEN) {
@@ -188,11 +188,13 @@ void execute(uint32_t database_size, int num_exps) {
                 zero++;
             }
             total++;
-            key = (next_rank + key + database_size / 3) % database_size;\
+            key = (next_rank + key + database_size / 3) % database_size;
+        }
+        if (think_time > 0) {
+            std::this_thread::sleep_for(microseconds(think_time));
         }
     }
     send_quit(sockfd);
-//    cout << "zero rate: " << zero / total << endl;
 }
 
 void run(int num_threads, uint32_t database_size, int num_exps) {
@@ -222,7 +224,9 @@ void usage(ostream &os) {
     os << "--lambda" << endl;
     os << "-m       parameter for exponential distribution" << endl;
     os << "--num" << endl;
-    os << "-n       number of operations each client does" << endl;
+    os << "-n       number of operations each client does" << endl;;
+    os << "--think" << endl;
+    os << "-t       think time in microseconds" << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -234,6 +238,7 @@ int main(int argc, char *argv[]) {
             {"client",  required_argument, 0, 'c'},
             {"num",     required_argument, 0, 'n'},
             {"lambda",  required_argument, 0, 'm'},
+            {"think",   required_argument, 0, 't'},
             {0, 0, 0, 0}
     };
 
