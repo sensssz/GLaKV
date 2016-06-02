@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
     uint32_t database_size = DB_SIZE;
     int num_clients = NUM_CLIENTS;
     int num_exps = NUM_EXP;
-    while ((c = getopt_long(argc, argv, "lehs:c:m:n:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "lehs:c:m:n:t:", long_options, &option_index)) != -1) {
         switch(c) {
             case 'l':
                 load_flag = 1;
@@ -287,6 +287,9 @@ int main(int argc, char *argv[]) {
             case 'n':
                 num_exps = atoi(optarg);
                 break;
+            case 't':
+                think_time = (uint32_t) atoi(optarg);
+                break;
             case '?':
                 break;
             default:
@@ -305,11 +308,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (execute_flag) {
-        auto start = std::chrono::high_resolution_clock::now();
+//        auto start = std::chrono::high_resolution_clock::now();
         run(num_clients, database_size, num_exps);
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> diff = end-start;
-        cout << "Throughput: " << (num_clients * num_exps) / diff.count() << endl;
+//        auto end = std::chrono::high_resolution_clock::now();
+//        std::chrono::duration<double> diff = end-start;
+//        cout << "Throughput: " << (num_clients * num_exps) / diff.count() << endl;
     }
     return 0;
 }
