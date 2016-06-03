@@ -22,11 +22,11 @@ rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 
 for t in 10 20;
 do
-    for m in 0.1 0.15 0.2;
+    for m in 0.1 0.15;
     do
-        for((c=1;c<=16;c*=2));
+        for((c=1;c<=8;c*=2));
         do
-            for((think=20;think<=100;think+=20));
+            for((think=0;think<=500;think+=100));
             do
                 for p in `seq 0 5`;
                 do
