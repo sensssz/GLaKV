@@ -18,7 +18,7 @@ using std::endl;
 using std::chrono::microseconds;
 
 const int CONTENTION = 5;
-const int GET_TIME = 50;
+const int GET_TIME = 300;
 const int PUT_TIME = 150;
 const int DEL_TIME = 100;
 
