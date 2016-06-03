@@ -202,9 +202,9 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             cerr << "Error sending result to client" << endl;
             return;
         }
-        lock.lock();
-        latencies.push_back(time);
-        lock.unlock();
+//        lock.lock();
+//        latencies.push_back(time);
+//        lock.unlock();
     };
 
     bool prefetch_success = false;
@@ -314,9 +314,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 if (write(sockfd, res, res_len) != (ssize_t) res_len) {
                     cerr << "ERROR sending result to client" << endl;
                 }
-//                lock.lock();
-//                latencies.push_back(time);
-//                lock.unlock();
+                lock.lock();
+                latencies.push_back(time);
+                lock.unlock();
             }
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
             key = get_uint32(buffer + PUT_LEN);
@@ -396,7 +396,7 @@ int main(int argc, char *argv[])
                     for (auto latency : latencies) {
                         sum += latency;
                     }
-                    cout << sum / latencies.size() << "," << latencies.size() << "," <<
+                    cout << sum / latencies.size() << "," << (latencies.size() + prefetch_hit) << "," <<
                             prediction_hit / (latencies.size() + prefetch_hit) << "," <<
                             prefetch_hit / (latencies.size() + prefetch_hit) << endl;
 //                    cout << "Prediction hits: " << prediction_hit << endl;
