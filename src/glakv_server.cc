@@ -222,7 +222,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 prediction_success = true;
                 prediction_hit++;
                 (*iter)->callback = callback;
-                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
+//                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
             }
             task_lock.unlock();
         }
@@ -340,9 +340,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                     cerr << "Error sending result to client" << endl;
                     return;
                 }
-                lock.lock();
-                latencies.push_back(time);
-                lock.unlock();
+//                lock.lock();
+//                latencies.push_back(time);
+//                lock.unlock();
             });
             pool.submit_task(db_task);
         } else if (strncmp(QUIT, buffer, QUIT_LEN) == 0) {
