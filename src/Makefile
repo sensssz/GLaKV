@@ -11,7 +11,7 @@ endif
 SRC = .
 INCLUDE = -I$(CUSTOM_USR)/include -I$(SRC)
 LDFLAGS = -L$(CUSTOM_USR)/lib $(LIBS)
-CXXFLAGS = -Wall -Werror -std=c++11 -c $(INCLUDE)
+CXXFLAGS = -Wall -Werror -Wno-unused-variable -std=c++11 -c $(INCLUDE)
 SERVEROBJS = DBImpl.o fakeDB.o lrucache.o worker_thread.o thread_pool.o glakv_server.o
 CLIENTOBJS = glakv_client.o exponential_distribution.o
 OBJS = $(SERVEROBJS) $(CLIENTOBJS)
