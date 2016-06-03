@@ -314,9 +314,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 if (write(sockfd, res, res_len) != (ssize_t) res_len) {
                     cerr << "ERROR sending result to client" << endl;
                 }
-                lock.lock();
-                latencies.push_back(time);
-                lock.unlock();
+//                lock.lock();
+//                latencies.push_back(time);
+//                lock.unlock();
             }
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
             key = get_uint32(buffer + PUT_LEN);
@@ -340,9 +340,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                     cerr << "Error sending result to client" << endl;
                     return;
                 }
-//                lock.lock();
-//                latencies.push_back(time);
-//                lock.unlock();
+                lock.lock();
+                latencies.push_back(time);
+                lock.unlock();
             });
             pool.submit_task(db_task);
         } else if (strncmp(QUIT, buffer, QUIT_LEN) == 0) {
