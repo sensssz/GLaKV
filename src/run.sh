@@ -26,7 +26,7 @@ do
     do
         for((c=1;c<=8;c*=2));
         do
-            for((think=0;think<=500;think+=100));
+            for((think=0;think<=150;think+=50));
             do
                 for p in `seq 0 5`;
                 do
