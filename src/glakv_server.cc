@@ -222,7 +222,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
                 prediction_success = true;
                 prediction_hit++;
                 (*iter)->callback = callback;
-//                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
+                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
             }
             task_lock.unlock();
         }
