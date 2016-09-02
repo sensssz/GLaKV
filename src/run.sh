@@ -19,6 +19,7 @@ ssh salat3 "mkdir -p ${output_path}/"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 mkdir -p ${output_path}/
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+echo 'num_workers,lambda,num_clients,think,num_prefetch,avg_latency,num_exps' >> ${output_path}/${exp_name}
 
 for t in 10 20;
 do
