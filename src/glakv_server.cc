@@ -210,47 +210,46 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
 //    auto start = std::chrono::high_resolution_clock::now();
     bool prefetch_success = false;
     bool prediction_success = false;
-    for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
+    for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end();) {
         auto db_task = *iter;
         if (db_task->key == key) {
-            unique_lock<mutex> task_lock(db_task->task_mutex);
+            prediction_hit++;
             if (db_task->task_state == finished || db_task->task_state == detached) {
                 prefetch_success = true;
                 prefetch_hit++;
-                prediction_hit++;
                 val = db_task->val;
             } else if (!prefetch_success && !prediction_success) {
+                unique_lock<mutex> task_lock(db_task->task_mutex);
                 prediction_success = true;
-                prediction_hit++;
                 (*iter)->callback = callback;
-//                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
+                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
+                task_lock.unlock();
             }
-            task_lock.unlock();
         }
         if (db_task->key != key || db_task->task_state == finished || db_task->task_state == detached) {
             iter = prefetch_tasks.erase(iter);
-            --iter;
             deprecated_tasks.push_back(db_task);
+        } else {
+            ++iter;
         }
     }
-    for (auto iter = deprecated_tasks.begin(); iter != deprecated_tasks.end(); ++iter) {
+    assert(prefetch_tasks.size() <= 1);
+    for (auto iter = deprecated_tasks.begin(); iter != deprecated_tasks.end();) {
         auto db_task = *iter;
         if (db_task->task_state == detached) {
             delete db_task;
             iter = deprecated_tasks.erase(iter);
-            --iter;
-        } else if (db_task->operation != noop && db_task->task_state == in_queue) {
-            unique_lock<mutex> task_lock(db_task->task_mutex);
-            db_task->operation = noop;
-            task_lock.unlock();
+        } else {
+            ++iter;
         }
     }
 
-    for (auto iter = tasks.begin(); iter != tasks.end(); ++iter) {
+    for (auto iter = tasks.begin(); iter != tasks.end();) {
         if ((*iter)->task_state == detached) {
             delete *iter;
             iter = tasks.erase(iter);
-            --iter;
+        } else {
+            ++iter;
         }
     }
     if (!prediction_success && !prefetch_success) {
