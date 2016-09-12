@@ -23,7 +23,7 @@ echo 'num_workers,lambda,num_clients,think,num_prefetch,avg_latency,num_exps' >>
 
 for t in 10 20;
 do
-    for m in 0.1 0.15;
+    for m in 0.01 0.05 0.1;
     do
         for((c=1;c<=8;c*=2));
         do
