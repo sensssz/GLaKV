@@ -202,12 +202,12 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             cerr << "Error sending result to client" << endl;
             return;
         }
-//        lock.lock();
-//        latencies.push_back(time);
-//        lock.unlock();
+        lock.lock();
+        latencies.push_back(time);
+        lock.unlock();
     };
 
-    auto start = std::chrono::high_resolution_clock::now();
+//    auto start = std::chrono::high_resolution_clock::now();
     bool prefetch_success = false;
     bool prediction_success = false;
     for (auto iter = prefetch_tasks.begin(); iter != prefetch_tasks.end(); ++iter) {
@@ -259,11 +259,11 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         pool.submit_task(db_task);
     }
     prefetch_for_key(db, pool, key, prefetch_tasks);
-    auto diff = std::chrono::high_resolution_clock::now() - start;
-    double time = diff.count() / 1000;
-    lock.lock();
-    latencies.push_back(time);
-    lock.unlock();
+//    auto diff = std::chrono::high_resolution_clock::now() - start;
+//    double time = diff.count() / 1000;
+//    lock.lock();
+//    latencies.push_back(time);
+//    lock.unlock();
     return prefetch_success;
 }
 
@@ -320,9 +320,9 @@ void serve_client(int sockfd, thread_pool &pool, DB &db, vector<double> &latenci
                 if (write(sockfd, res, res_len) != (ssize_t) res_len) {
                     cerr << "ERROR sending result to client" << endl;
                 }
-//                lock.lock();
-//                latencies.push_back(time);
-//                lock.unlock();
+                lock.lock();
+                latencies.push_back(time);
+                lock.unlock();
             }
         } else if (strncmp(PUT, buffer, PUT_LEN) == 0) {
             key = get_uint32(buffer + PUT_LEN);
