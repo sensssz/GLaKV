@@ -214,16 +214,15 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
         auto db_task = *iter;
         if (db_task->key == key) {
             prediction_hit++;
+            unique_lock<mutex> task_lock(db_task->task_mutex);
             if (db_task->task_state == finished || db_task->task_state == detached) {
                 prefetch_success = true;
                 prefetch_hit++;
                 val = db_task->val;
             } else if (!prefetch_success && !prediction_success) {
-                unique_lock<mutex> task_lock(db_task->task_mutex);
                 prediction_success = true;
                 (*iter)->callback = callback;
                 (*iter)->birth_time = std::chrono::high_resolution_clock::now();
-                task_lock.unlock();
             }
         }
         if (db_task->key != key || db_task->task_state == finished || db_task->task_state == detached) {
