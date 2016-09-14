@@ -222,7 +222,7 @@ bool prefetch_or_submit(int sockfd, thread_pool &pool, DB &db, vector<double> &l
             } else if (!prefetch_success && !prediction_success) {
                 prediction_success = true;
                 (*iter)->callback = callback;
-//                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
+                (*iter)->birth_time = std::chrono::high_resolution_clock::now();
             }
         }
         if (db_task->key != key || db_task->task_state == finished || db_task->task_state == detached) {
