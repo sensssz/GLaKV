@@ -54,7 +54,7 @@ exp_name="think"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 t=10
-m=0.32
+m=0.31
 c=4
 for((think=300;think<=1300;think+=200));
 do
