@@ -50,12 +50,18 @@ mkdir -p ${output_path}/
 #    done
 #done
 
+default_t=10
+default_m=0.01
+default_c=4
+default_think=1000
+
 exp_name="think"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-t=10
-m=0.01
-c=4
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
 for((think=300;think<=1300;think+=200));
 do
     for p in `seq 0 1`;
@@ -81,9 +87,10 @@ done
 exp_name="prediction"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-t=10
-c=4
-think=1000
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
 for m in 0.01 0.1 0.15 0.2 0.25 0.3;
 do
     for p in `seq 0 1`;
@@ -109,10 +116,10 @@ done
 exp_name="prefetch"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-t=10
-c=4
-m=0.01
-think=1000
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
 for p in `seq 0 5`;
 do
     if [[ ! -z ${quit+x} ]]; then
@@ -135,8 +142,10 @@ done
 exp_name="workers"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-c=4
-think=1000
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
 for t in 5 10 20 30 40;
 do
     for p in `seq 0 1`;
@@ -162,8 +171,10 @@ done
 exp_name="clients"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-t=10
-think=1000
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
 for c in 2 4 6 8 10;
 do
     for p in `seq 0 1`;
