@@ -111,6 +111,7 @@ ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 t=10
 c=4
+m=0.01
 think=1000
 for p in `seq 0 5`;
 do
