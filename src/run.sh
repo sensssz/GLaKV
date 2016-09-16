@@ -6,7 +6,7 @@ salat3=salat3.eecs.umich.edu
 db_path=/home/jiamin/speculative/GLaKV/src
 output_path=/home/jiamin/speculative/out
 
-num_exp=500
+num_exp=200
 exp_name="diff_t_m_c_p_t.pre"
 
 if [[ $# -eq 1 ]]; then
@@ -52,37 +52,37 @@ mkdir -p ${output_path}/
 
 default_t=10
 default_m=0.31
-default_c=4
+default_c=2
 default_think=1000
 
-#exp_name="think"
-#ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
-#rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-#t=${default_t}
-#m=${default_m}
-#c=${default_c}
-#think=${default_think}
-#for((think=300;think<=1300;think+=200));
-#do
-#    for p in `seq 0 1`;
-#    do
-#        if [[ ! -z ${quit+x} ]]; then
-#            exit 0
-#        fi
-#        ssh salat3 /bin/zsh << EOF
-#        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
-#        echo -n "${think},${p}," >> ${output_path}/${exp_name}
-#        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
-#EOF
-#        sleep 2
-#        echo -n "${think},${p}," >> ${output_path}/${exp_name}
-#        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
-#        if [[ $? -ne 0 ]]; then
-#            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
-#        fi
-#        sleep 1
-#    done
-#done
+exp_name="think"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
+rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
+for((think=300;think<=1300;think+=200));
+do
+    for p in `seq 0 1`;
+    do
+        if [[ ! -z ${quit+x} ]]; then
+            exit 0
+        fi
+        ssh salat3 /bin/zsh << EOF
+        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
+        echo -n "${think},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+EOF
+        sleep 2
+        echo -n "${think},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
+        if [[ $? -ne 0 ]]; then
+            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
+        fi
+        sleep 1
+    done
+done
 
 exp_name="prediction"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
@@ -113,86 +113,86 @@ EOF
     done
 done
 
-#exp_name="prefetch"
-#ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
-#rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-#t=${default_t}
-#m=${default_m}
-#c=${default_c}
-#think=${default_think}
-#for p in `seq 0 5`;
-#do
-#    if [[ ! -z ${quit+x} ]]; then
-#        exit 0
-#    fi
-#    ssh salat3 /bin/zsh << EOF
-#    export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
-#    echo -n "{p}," >> ${output_path}/${exp_name}
-#    ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
-#EOF
-#    sleep 2
-#    echo -n "${p}," >> ${output_path}/${exp_name}
-#    ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
-#    if [[ $? -ne 0 ]]; then
-#        ssh salat3 "echo '' >> ${output_path}/${exp_name}"
-#    fi
-#    sleep 1
-#done
-#
-#exp_name="workers"
-#ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
-#rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-#t=${default_t}
-#m=${default_m}
-#c=${default_c}
-#think=${default_think}
-#for t in 5 10 20 30 40;
-#do
-#    for p in `seq 0 1`;
-#    do
-#        if [[ ! -z ${quit+x} ]]; then
-#            exit 0
-#        fi
-#        ssh salat3 /bin/zsh << EOF
-#        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
-#        echo -n "${t},${p}," >> ${output_path}/${exp_name}
-#        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
-#EOF
-#        sleep 2
-#        echo -n "${t},${p}," >> ${output_path}/${exp_name}
-#        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
-#        if [[ $? -ne 0 ]]; then
-#            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
-#        fi
-#        sleep 1
-#    done
-#done
-#
-#exp_name="clients"
-#ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
-#rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
-#t=${default_t}
-#m=${default_m}
-#c=${default_c}
-#think=${default_think}
-#for c in 2 4 6 8 10;
-#do
-#    for p in `seq 0 1`;
-#    do
-#        if [[ ! -z ${quit+x} ]]; then
-#            exit 0
-#        fi
-#        ssh salat3 /bin/zsh << EOF
-#        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
-#        echo -n "${c},${p}," >> ${output_path}/${exp_name}
-#        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
-#EOF
-#        sleep 2
-#        echo -n "${c},${p}," >> ${output_path}/${exp_name}
-#        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
-#        if [[ $? -ne 0 ]]; then
-#            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
-#        fi
-#        sleep 1
-#    done
-#done
+exp_name="prefetch"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
+rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
+for p in `seq 0 5`;
+do
+    if [[ ! -z ${quit+x} ]]; then
+        exit 0
+    fi
+    ssh salat3 /bin/zsh << EOF
+    export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
+    echo -n "{p}," >> ${output_path}/${exp_name}
+    ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+EOF
+    sleep 2
+    echo -n "${p}," >> ${output_path}/${exp_name}
+    ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
+    if [[ $? -ne 0 ]]; then
+        ssh salat3 "echo '' >> ${output_path}/${exp_name}"
+    fi
+    sleep 1
+done
+
+exp_name="workers"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
+rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
+for t in 5 10 20 30 40;
+do
+    for p in `seq 0 1`;
+    do
+        if [[ ! -z ${quit+x} ]]; then
+            exit 0
+        fi
+        ssh salat3 /bin/zsh << EOF
+        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
+        echo -n "${t},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+EOF
+        sleep 2
+        echo -n "${t},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
+        if [[ $? -ne 0 ]]; then
+            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
+        fi
+        sleep 1
+    done
+done
+
+exp_name="clients"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
+rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+t=${default_t}
+m=${default_m}
+c=${default_c}
+think=${default_think}
+for c in 2 4 6 8 10;
+do
+    for p in `seq 0 1`;
+    do
+        if [[ ! -z ${quit+x} ]]; then
+            exit 0
+        fi
+        ssh salat3 /bin/zsh << EOF
+        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
+        echo -n "${c},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+EOF
+        sleep 2
+        echo -n "${c},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
+        if [[ $? -ne 0 ]]; then
+            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
+        fi
+        sleep 1
+    done
+done
