@@ -84,7 +84,7 @@ rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 t=10
 c=4
 think=1000
-for m in 0.01 0.1 0.2 0.3;
+for m in 0.01 0.1 0.15 0.2 0.25 0.3;
 do
     for p in `seq 0 1`;
     do
@@ -136,7 +136,7 @@ ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 c=4
 think=1000
-for t in 10 20 30;
+for t in 5 10 20 30 40;
 do
     for p in `seq 0 1`;
     do
@@ -163,7 +163,7 @@ ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 t=10
 think=1000
-for c in 2 4 8;
+for c in 2 4 6 8 10;
 do
     for p in `seq 0 1`;
     do
