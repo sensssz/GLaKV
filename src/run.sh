@@ -6,7 +6,7 @@ salat3=salat3.eecs.umich.edu
 db_path=/home/jiamin/speculative/GLaKV/src
 output_path=/home/jiamin/speculative/out
 
-num_exp=100
+num_exp=200
 exp_name="diff_t_m_c_p_t.pre"
 
 if [[ $# -eq 1 ]]; then
