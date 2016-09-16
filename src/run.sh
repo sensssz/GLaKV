@@ -54,11 +54,11 @@ exp_name="think"
 ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 t=10
-m=0.32
+m=0.31
 c=4
 for((think=300;think<=1300;think+=200));
 do
-    for p in `seq 0 5`;
+    for p in `seq 0 1`;
     do
         if [[ ! -z ${quit+x} ]]; then
             exit 0
@@ -78,3 +78,109 @@ EOF
     done
 done
 
+exp_name="prediction"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
+rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+t=10
+c=4
+think=1000
+for m in 0.01 0.1 0.2 0.3;
+do
+    for p in `seq 0 1`;
+    do
+        if [[ ! -z ${quit+x} ]]; then
+            exit 0
+        fi
+        ssh salat3 /bin/zsh << EOF
+        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
+        echo -n "${m},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+EOF
+        sleep 2
+        echo -n "${m},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
+        if [[ $? -ne 0 ]]; then
+            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
+        fi
+        sleep 1
+    done
+done
+
+exp_name="prefetch"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
+rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+t=10
+c=4
+think=1000
+for p in `seq 0 5`;
+do
+    if [[ ! -z ${quit+x} ]]; then
+        exit 0
+    fi
+    ssh salat3 /bin/zsh << EOF
+    export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
+    echo -n "{p}," >> ${output_path}/${exp_name}
+    ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+EOF
+    sleep 2
+    echo -n "${p}," >> ${output_path}/${exp_name}
+    ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
+    if [[ $? -ne 0 ]]; then
+        ssh salat3 "echo '' >> ${output_path}/${exp_name}"
+    fi
+    sleep 1
+done
+
+exp_name="workers"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
+rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+c=4
+think=1000
+for t in 10 20 30;
+do
+    for p in `seq 0 1`;
+    do
+        if [[ ! -z ${quit+x} ]]; then
+            exit 0
+        fi
+        ssh salat3 /bin/zsh << EOF
+        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
+        echo -n "${t},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+EOF
+        sleep 2
+        echo -n "${t},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
+        if [[ $? -ne 0 ]]; then
+            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
+        fi
+        sleep 1
+    done
+done
+
+exp_name="clients"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
+rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
+t=10
+think=1000
+for c in 2 4 8;
+do
+    for p in `seq 0 1`;
+    do
+        if [[ ! -z ${quit+x} ]]; then
+            exit 0
+        fi
+        ssh salat3 /bin/zsh << EOF
+        export LD_LIBRARY_PATH=/home/jiamin/gcc/lib64:/home/jiamin/usr/lib:$LD_LIBRARY_PATH
+        echo -n "${c},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_server --dir ${db_path}/glakv_home -p ${p} -n 1 -t ${t} >> ${output_path}/${exp_name}&
+EOF
+        sleep 2
+        echo -n "${c},${p}," >> ${output_path}/${exp_name}
+        ${db_path}/glakv_client -e -m ${m} -c ${c} -n ${num_exp} -t ${think} >> ${output_path}/${exp_name}
+        if [[ $? -ne 0 ]]; then
+            ssh salat3 "echo '' >> ${output_path}/${exp_name}"
+        fi
+        sleep 1
+    done
+done
