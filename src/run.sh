@@ -51,7 +51,7 @@ mkdir -p ${output_path}/
 #done
 
 default_t=10
-default_m=0.01
+default_m=0.31
 default_c=4
 default_think=1000
 
