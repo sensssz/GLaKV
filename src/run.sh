@@ -57,7 +57,7 @@ t=10
 m=10
 c=4
 p=1
-for((think=500;think<=1100;think+=200));
+for((think=300;think<=1300;think+=200));
 do
     if [[ ! -z ${quit+x} ]]; then
         exit 0
