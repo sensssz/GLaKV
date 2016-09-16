@@ -16,7 +16,6 @@ fi
 trap 'quit=1' INT
 
 ssh salat3 "mkdir -p ${output_path}/"
-ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 mkdir -p ${output_path}/
 #echo 'num_workers,lambda,num_clients,think,num_prefetch,avg_latency,num_exps' >> ${output_path}/${exp_name}
 
@@ -52,6 +51,7 @@ mkdir -p ${output_path}/
 #done
 
 exp_name="think"
+ssh salat3 "rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}"
 rm -f ${output_path}/${exp_name} && touch ${output_path}/${exp_name}
 t=10
 m=10
