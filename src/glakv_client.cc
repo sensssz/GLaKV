@@ -220,7 +220,7 @@ void run(int num_threads, uint32_t database_size, int num_exps) {
     for (auto latency : latencies) {
         sum += latency;
     }
-    cout << sum / latencies.size() << "," << latencies.size() << endl;
+    cout << sum / latencies.size() << endl;
 }
 
 void usage(ostream &os) {
